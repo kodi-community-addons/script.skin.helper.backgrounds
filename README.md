@@ -2,7 +2,7 @@
 a helper service for Kodi skins providing rotating backgrounds
 
 
-#### Backgrounds provided by the script
+### Backgrounds provided by the script
 The script has a background scanner to provide some rotating fanart backgrounds which can be used in your skin as backgrounds. The backgrounds are available in window properties.
 
 Note: In the addon settings users can configure the rotation speed/interval or even disable the entire service.
@@ -26,7 +26,29 @@ Default is 30 seconds.
 | SkinHelper.RecentVideosBackground | Recent videos background (movie or tvshow)|
 | SkinHelper.InProgressVideosBackground | In progress videos background (movie or tvshow)|
 | SkinHelper.PvrBackground | Random fanart collected by the PVR thumbs feature|
-| SkinHelper.PicturesBackground | Random pictures from all picture sources. By default this pulls images from all picture sources the user has configured. It is however possible to provide a custom source from which the images should be pulled from by setting Skin String: SkinHelper.CustomPicturesBackgroundPath|
+| SkinHelper.PicturesBackground | Random pictures from all picture sources. By default this pulls images from all picture sources the user has configured. It is however possible to provide a custom source from which the images should be pulled in the addon settings|
+
+Additional properties available for the backgrounds (e.g. SkinHelper.AllMoviesBackground.Poster)
+
+| property 			| description |
+| :----------------------------	| :----------- |
+| SkinHelper.BACKGROUNDNAME.poster | Poster image for the background (if available)|
+| SkinHelper.BACKGROUNDNAME.clearlogo | Clearlogo image for the background (if available)|
+| SkinHelper.BACKGROUNDNAME.landscape | Landscape image for the background (if available)|
+| SkinHelper.BACKGROUNDNAME.title | Title for the background (if available)|
+
+
+
+### Wall Backgrounds provided by the script
+The service provides pre-built image walls for certain collections. Ready to use in your skin.
+The walls are pregenerated once (at first launch) and stored within the addon_data folder.
+
+NOTE: In the addon settings users can configure the rotation speed/interval or even disable the entire service.
+Default is 60 seconds.
+
+
+| property 			| description |
+| :----------------------------	| :----------- |
 | SkinHelper.AllMoviesBackground.Wall | Collection of Movie fanart images (from the library as wall prebuilt by the script|
 | SkinHelper.AllMoviesBackground.Wall.BW | Collection of Movie fanart images (from the library as wall (black and white prebuilt by the script|
 | SkinHelper.AllMoviesBackground.Poster.Wall | Collection of Movie poster images (from the library as wall prebuilt by the script|
@@ -39,19 +61,10 @@ Default is 30 seconds.
 | SkinHelper.AllTvShowsBackground.Poster.Wall | Collection of Tv show poster images (from the library as wall prebuilt by the script|
 | SkinHelper.AllTvShowsBackground.Poster.Wall.BW | Collection of Tv show poster images (from the library as wall (black and white prebuilt by the script|
 
-Additional properties available for the backgrounds (e.g. SkinHelper.AllMoviesBackground.Poster)
-
-| property 			| description |
-| :----------------------------	| :----------- |
-| SkinHelper.BACKGROUNDNAME.poster | Poster image for the background (if available)|
-| SkinHelper.BACKGROUNDNAME.clearlogo | Clearlogo image for the background (if available)|
-| SkinHelper.BACKGROUNDNAME.landscape | Landscape image for the background (if available)|
-| SkinHelper.BACKGROUNDNAME.title | Title for the background (if available)|
-
-NOTE: the generation of wall images is experimental and might have impact on the cpu while creating them (at startup only). The feature can be disabled in the addon settings.
 
 
-#### Individual random images for creating image walls yourself in your skin
+
+### Individual random images for creating image walls yourself in your skin
 If you want to create a wall with images yourself in your skin and you need randomly changing images, there is a way to let the script provide these images for you.
 
 
@@ -66,28 +79,37 @@ Also note that the additional properties will also be available e.g. SkinHelper.
 
 Examples...
 
+'''
 To get a collection of 10 images from the AllMoviesBackground provided by skinhelper:
 
 Skin.SetString(SkinHelper.AllMoviesBackground.EnableWallImages, 10)
 
-And to get e.g. fanart image 5 from the collection: SkinHelper.AllMoviesBackground.Wall.5)
+And to get e.g. fanart image 5 from the collection: $INFO[Window(Home).Property(SkinHelper.AllMoviesBackground.Wall.5)]
 
-Or the poster: SkinHelper.AllMoviesBackground.Wall.5.Poster)
-
+Or the poster: $INFO[Window(Home).Property(SkinHelper.AllMoviesBackground.Wall.5.Poster)
+'''
 
 
 Or to get the images for one of the plex smart shortcuts:
+
+'''
 Skin.SetString(plexbmc.0.image.EnableWallImages, 10)  --> enable it for 10 images
 
-And to get for example the first fanart image of the collection: plexbmc.0.image.Wall.0)
+And to get for example the first fanart image of the collection: $INFO[Window(Home).Property(plexbmc.0.image.Wall.0)]
+
+'''
+
+
+
 
 
 Last example, get the images for playlists (smart shortcuts for playlists should be enabled!)
 
+'''
 Skin.SetString(playlist.0.image.EnableWallImages, 10  --> enable it for the first playlist and we want 10 images
 
-And to get for example the second fanart image of the collection: playlist.0.image.Wall.1)
-
+And to get for example the second fanart image of the collection: $INFO[Window(Home).Property(playlist.0.image.Wall.1)]
+'''
 
 The dynamic backgrounds for the smartshortcuts (e.g. playlist.X.image should be set individually.
 
@@ -116,7 +138,7 @@ These are already resized into 1 image so that Kodi will only have to load 1 fan
 ________________________________________________________________________________________________________
 
 
-#### Conditional Background overrides
+### Conditional Background overrides
 Allows the user to globally override the skin's background on certain date conditions.
 For example setup a christmas background at late december etc.
 By launching this script entrypoint the user will be presented with a dialog to add, delete and edit conditional overrides.
