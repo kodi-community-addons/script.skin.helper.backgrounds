@@ -2,6 +2,7 @@
 a helper service for Kodi skins providing rotating backgrounds
 
 
+
 ### Backgrounds provided by the script
 The script has a background scanner to provide some rotating fanart backgrounds which can be used in your skin as backgrounds. The backgrounds are available in window properties.
 
@@ -39,6 +40,9 @@ Additional properties available for the backgrounds (e.g. SkinHelper.AllMoviesBa
 
 
 
+________________________________________________________________________________________________________
+
+
 ### Wall Backgrounds provided by the script
 The service provides pre-built image walls for certain collections. Ready to use in your skin.
 The walls are pregenerated once (at first launch) and stored within the addon_data folder.
@@ -62,6 +66,7 @@ Default is 60 seconds.
 | SkinHelper.AllTvShowsBackground.Poster.Wall.BW | Collection of Tv show poster images (from the library as wall (black and white prebuilt by the script|
 
 
+________________________________________________________________________________________________________
 
 
 ### Individual random images for creating image walls yourself in your skin
@@ -79,7 +84,7 @@ Also note that the additional properties will also be available e.g. SkinHelper.
 
 Examples...
 
-'''
+```
 To get a collection of 10 images from the AllMoviesBackground provided by skinhelper:
 
 Skin.SetString(SkinHelper.AllMoviesBackground.EnableWallImages, 10)
@@ -87,17 +92,17 @@ Skin.SetString(SkinHelper.AllMoviesBackground.EnableWallImages, 10)
 And to get e.g. fanart image 5 from the collection: $INFO[Window(Home).Property(SkinHelper.AllMoviesBackground.Wall.5)]
 
 Or the poster: $INFO[Window(Home).Property(SkinHelper.AllMoviesBackground.Wall.5.Poster)
-'''
+```
 
 
 Or to get the images for one of the plex smart shortcuts:
 
-'''
+```
 Skin.SetString(plexbmc.0.image.EnableWallImages, 10)  --> enable it for 10 images
 
 And to get for example the first fanart image of the collection: $INFO[Window(Home).Property(plexbmc.0.image.Wall.0)]
 
-'''
+```
 
 
 
@@ -105,17 +110,22 @@ And to get for example the first fanart image of the collection: $INFO[Window(Ho
 
 Last example, get the images for playlists (smart shortcuts for playlists should be enabled!)
 
-'''
+```
 Skin.SetString(playlist.0.image.EnableWallImages, 10  --> enable it for the first playlist and we want 10 images
 
 And to get for example the second fanart image of the collection: $INFO[Window(Home).Property(playlist.0.image.Wall.1)]
-'''
+```
+
+
+
 
 The dynamic backgrounds for the smartshortcuts (e.g. playlist.X.image should be set individually.
 
 It should be pretty safe if you just enable them for all available options, the script checks if the smartshortcuts actually exists.
 
 So ,you should be fine if you do this:
+
+```
 
 Skin.SetString(playlist.0.image.EnableWallImages, 10)
 
@@ -126,6 +136,8 @@ Skin.SetString(playlist.2.image.EnableWallImages, 10)
 Skin.SetString(playlist.3.image.EnableWallImages, 10)
 
 etc. etc.
+
+```
 
 
 CAUTION: The script uses the already cached in memory collections of images to provide you the individual images to build your wall, it does add a little overhead but it should not be noticeable.
