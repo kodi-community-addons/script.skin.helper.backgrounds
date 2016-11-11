@@ -1,10 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+'''
+    script.skin.helper.backgrounds
+    a helper service for Kodi skins providing rotating backgrounds
+'''
+
 import threading
 import thread
 import random
-import io
 import base64
 import os
 from datetime import timedelta
@@ -30,6 +34,7 @@ class BackgroundsUpdater():
     all_backgrounds_keys = {}
     all_backgrounds_labels = OrderedDict()
     pvr_bg_recordingsonly = False
+    custom_picturespath = ""
 
     def __init__(self):
         self.cache = SimpleCache()
@@ -201,13 +206,13 @@ class BackgroundsUpdater():
                         randomdirs.append(source["file"])
 
                         # pick 15 images from each dir
-                        for dir in randomdirs:
-                            files2 = xbmcvfs.listdir(dir)[1]
+                        for item in randomdirs:
+                            files2 = xbmcvfs.listdir(item)[1]
                             count = 0
                             for count, filename in enumerate(files2):
                                 if ((filename.endswith(".jpg") or filename.endswith(".png")) and count < 15):
                                     filename = filename.decode("utf-8")
-                                    image = os.path.join(dir, filename)
+                                    image = os.path.join(item, filename)
                                     images.append({"fanart": image, "title": filename})
 
         # store images in the cache

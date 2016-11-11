@@ -1,5 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+'''
+    The service provides pre-built image walls for certain collections.
+    Ready to use in your skin. The walls are pregenerated once and stored within the addon_data folder.
+    NOTE: In the addon settings users can configure the rotation speed/interval or even disable the entire service.
+    Default is 60 seconds.
+'''
+
 from utils import get_content_path, log_msg, ADDON_ID
 from artutils import process_method_on_list, get_clean_image
 import xbmc
@@ -48,7 +56,7 @@ class WallImages():
 
     def update_wall_background(self, wall_tuple):
         '''update a single wall background'''
-        
+
         win_prop = wall_tuple[1]
         wall_win_prop = wall_tuple[0]
         wall_win_prop_bw = wall_win_prop + ".BW"
@@ -89,7 +97,6 @@ class WallImages():
         # reuse the existing images - do not rebuild all the time
         dirs, files = xbmcvfs.listdir(WALLS_PATH)
         for file in files:
-            image = {}
             # return color and bw image combined - only if both are found
             color_path = WALLS_PATH + file.replace("_BW", "")
             black_path = WALLS_PATH + file

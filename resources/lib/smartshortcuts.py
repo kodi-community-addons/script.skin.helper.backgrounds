@@ -7,6 +7,16 @@ import xbmc
 import xbmcvfs
 import thread
 
+'''
+Smart shortcuts feature
+This feature is introduced to be able to provide quick-access shortcuts to specific sections of Kodi,
+such as user created playlists and favourites and entry points of some 3th party addons such as Emby and Plex.
+What it does is provide some Window properties about the shortcut.
+It is most convenient used with the skin shortcuts script but can offcourse be used in any part of your skin.
+The most important behaviour of the smart shortcuts feature is that is pulls images from the library path
+so you can have content based backgrounds.
+'''
+
 
 class SmartShortCuts():
     '''Smart shortcuts listings'''
@@ -63,7 +73,7 @@ class SmartShortCuts():
                             label = self.win.getProperty("emby.nodes.%s%s.title" % (count, content_string))
                             if item_path:
                                 content = get_content_path(item_path)
-                                nodes.append(("%s.image" % key, item_path, label))
+                                nodes.append(("%s.image" % key, content, label))
                                 if content_string == "":
                                     if "emby.nodes.%s" % count not in self.toplevel_nodes:
                                         self.toplevel_nodes.append("emby.nodes.%s" % count)
@@ -266,10 +276,10 @@ class SmartShortCuts():
                     label = f2k_addon.getAddonInfo('name')
                     content = "plugin://plugin.video.flix2kodi/?mode=main&widget=true&url&widget=true"
                     item_path = "ActivateWindow(Videos,%s,return)" % content
-                    imagesitem_path = "plugin://plugin.video.flix2kodi/?mode="\
+                    images_path = "plugin://plugin.video.flix2kodi/?mode="\
                         "list_videos&thumb&media_type=both&url=list%3f%26mylist&widget=true"
                     media_type = "media"
-                    nodes.append((key, label, content, media_type, path, imagespath))
+                    nodes.append((key, label, content, media_type, item_path, images_path))
                     self.create_smartshortcuts_submenu("netflix.generic",
                                                        "special://home/addons/plugin.video.flix2kodi/icon.png")
 
@@ -280,7 +290,7 @@ class SmartShortCuts():
                         "&thumb&media_type=both&url=list%3f%26mylist&widget=true"
                     item_path = "ActivateWindow(Videos,%s,return)" % content
                     media_type = "movies"
-                    nodes.append((key, label, content, media_type, path))
+                    nodes.append((key, label, content, media_type, item_path))
 
                     if self.exit:
                         return
@@ -323,69 +333,69 @@ class SmartShortCuts():
                             key = "netflix.generic.suggestions"
                             content = item["file"] + "&widget=true"
                             item_path = "ActivateWindow(Videos,%s,return)" % content
-                            nodes.append((key, item["label"], content, "movies", path))
+                            nodes.append((key, item["label"], content, "movies", item_path))
                             # movies suggestions node
                             key = "netflix.movies.suggestions"
                             new_item_path = item["file"].replace("media_type=both", "media_type=movie")
                             content = new_item_path + "&widget=true"
                             item_path = "ActivateWindow(Videos,%s,return)" % content
-                            nodes.append((key, item["label"], content, "movies", path))
+                            nodes.append((key, item["label"], content, "movies", item_path))
                             # tvshows suggestions node
                             key = "netflix.tvshows.suggestions"
                             new_item_path = item["file"].replace("media_type=both", "media_type=show")
                             content = new_item_path + "&widget=true"
                             item_path = "ActivateWindow(Videos,%s,return)" % content
-                            nodes.append((key, item["label"], content, "tvshows", path))
+                            nodes.append((key, item["label"], content, "tvshows", item_path))
                         elif profilename in item["label"] and suggestions_node_found:
                             # this is the continue watching node!
                             # generic inprogress node
                             key = "netflix.generic.inprogress"
                             content = item["file"] + "&widget=true"
                             item_path = "ActivateWindow(Videos,%s,return)" % content
-                            nodes.append((key, item["label"], content, "movies", path))
+                            nodes.append((key, item["label"], content, "movies", item_path))
                             # movies inprogress node
                             key = "netflix.movies.inprogress"
                             new_item_path = item["file"].replace("media_type=both", "media_type=movie")
                             content = new_item_path + "&widget=true"
                             item_path = "ActivateWindow(Videos,%s,return)" % content
-                            nodes.append((key, item["label"], content, "movies", path))
+                            nodes.append((key, item["label"], content, "movies", item_path))
                             # tvshows inprogress node
                             key = "netflix.tvshows.inprogress"
                             new_item_path = item["file"].replace("media_type=both", "media_type=show")
                             content = new_item_path + "&widget=true"
                             item_path = "ActivateWindow(Videos,%s,return)" % content
-                            nodes.append((key, item["label"], content, "tvshows", path))
+                            nodes.append((key, item["label"], content, "tvshows", item_path))
                         elif item["label"].lower().endswith("releases"):
                             # this is the recent node!
                             # generic recent node
                             key = "netflix.generic.recent"
                             content = item["file"] + "&widget=true"
                             item_path = "ActivateWindow(Videos,%s,return)" % content
-                            nodes.append((key, item["label"], content, "movies", path))
+                            nodes.append((key, item["label"], content, "movies", item_path))
                             # movies recent node
                             key = "netflix.movies.recent"
                             new_item_path = item["file"].replace("media_type=both", "media_type=movie")
                             content = new_item_path + "&widget=true"
                             item_path = "ActivateWindow(Videos,%s,return)" % content
-                            nodes.append((key, item["label"], content, "movies", path))
+                            nodes.append((key, item["label"], content, "movies", item_path))
                             # tvshows recent node
                             key = "netflix.tvshows.recent"
                             new_item_path = item["file"].replace("media_type=both", "media_type=show")
                             content = new_item_path + "&widget=true"
                             item_path = "ActivateWindow(Videos,%s,return)" % content
-                            nodes.append((key, item["label"], content, "tvshows", path))
+                            nodes.append((key, item["label"], content, "tvshows", item_path))
                         elif item["label"] == "Trending":
                             # this is the trending node!
                             key = "netflix.generic.trending"
                             content = item["file"] + "&widget=true"
                             item_path = "ActivateWindow(Videos,%s,return)" % content
-                            nodes.append((key, item["label"], content, "movies", path))
+                            nodes.append((key, item["label"], content, "movies", item_path))
                         else:
                             key = "netflix.generic.suggestions.%s" % itemscount
                             content = item["file"] + "&widget=true"
                             item_path = "ActivateWindow(Videos,%s,return)" % content
                             media_type = "movies"
-                            nodes.append((key, item["label"], content, media_type, path))
+                            nodes.append((key, item["label"], content, media_type, item_path))
                             itemscount += 1
 
                         # get recommended node...
@@ -394,17 +404,17 @@ class SmartShortCuts():
                                 key = "netflix.generic.recommended"
                                 content = item["file"] + "&widget=true"
                                 item_path = "ActivateWindow(Videos,%s,return)" % item["file"]
-                                nodes.append((key, item["label"], content, "movies", path))
+                                nodes.append((key, item["label"], content, "movies", item_path))
 
                     # netflix movies
                     key = "netflix.movies"
                     label = f2k_addon.getAddonInfo('name') + " " + f2k_addon.getLocalizedString(30100)
                     content = "plugin://plugin.video.flix2kodi/?mode=main&thumb&media_type=movie&url&widget=true"
                     item_path = "ActivateWindow(Videos,%s,return)" % content
-                    imagesitem_path = "plugin://plugin.video.flix2kodi/?mode=list_videos&thumb"\
+                    images_path = "plugin://plugin.video.flix2kodi/?mode=list_videos&thumb"\
                         "&media_type=movie&url=list%3f%26mylist&widget=true"
                     media_type = "movies"
-                    nodes.append((key, label, content, media_type, path, imagespath))
+                    nodes.append((key, label, content, media_type, item_path, images_path))
                     self.create_smartshortcuts_submenu("netflix.movies",
                                                        "special://home/addons/plugin.video.flix2kodi/icon.png")
 
@@ -415,7 +425,7 @@ class SmartShortCuts():
                         "&media_type=movie&url=list%3f%26mylist&widget=true"
                     item_path = "ActivateWindow(Videos,%s,return)" % content
                     media_type = "movies"
-                    nodes.append((key, label, content, media_type, path))
+                    nodes.append((key, label, content, media_type, item_path))
 
                     # netflix movies genres
                     key = "netflix.movies.genres"
@@ -424,17 +434,17 @@ class SmartShortCuts():
                         "&media_type=movie&url&widget=true"
                     item_path = "ActivateWindow(Videos,%s,return)" % content
                     media_type = "genres"
-                    nodes.append((key, label, content, media_type, path))
+                    nodes.append((key, label, content, media_type, item_path))
 
                     # netflix tvshows
                     key = "netflix.tvshows"
                     label = f2k_addon.getAddonInfo('name') + " " + f2k_addon.getLocalizedString(30101)
                     content = "plugin://plugin.video.flix2kodi/?mode=main&thumb&media_type=show&url&widget=true"
                     item_path = "ActivateWindow(Videos,%s,return)" % content
-                    imagesitem_path = "plugin://plugin.video.flix2kodi/?mode=list_videos&thumb"\
+                    images_path = "plugin://plugin.video.flix2kodi/?mode=list_videos&thumb"\
                         "&media_type=show&url=list%3f%26mylist&widget=true"
                     media_type = "tvshows"
-                    nodes.append((key, label, content, media_type, path, imagespath))
+                    nodes.append((key, label, content, media_type, item_path, images_path))
                     self.create_smartshortcuts_submenu("netflix.tvshows",
                                                        "special://home/addons/plugin.video.flix2kodi/icon.png")
 
@@ -445,7 +455,7 @@ class SmartShortCuts():
                         "&media_type=show&url=list%3f%26mylist&widget=true"
                     item_path = "ActivateWindow(Videos,%s,return)" % content
                     media_type = "tvshows"
-                    nodes.append((key, label, content, media_type, path))
+                    nodes.append((key, label, content, media_type, item_path))
 
                     # netflix tvshows genres
                     key = "netflix.tvshows.genres"
@@ -453,7 +463,7 @@ class SmartShortCuts():
                     content = "plugin://plugin.video.flix2kodi/?mode=list_genres&thumb&media_type=show&url&widget=true"
                     item_path = "ActivateWindow(Videos,%s,return)" % content
                     media_type = "genres"
-                    nodes.append((key, label, content, media_type, path))
+                    nodes.append((key, label, content, media_type, item_path))
 
                     if "netflix.generic" not in self.smartShortcuts["allSmartShortcuts"]:
                         self.smartShortcuts["allSmartShortcuts"].append("netflix.generic")

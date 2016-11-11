@@ -13,7 +13,7 @@ DATE_FORMAT = "%Y-%m-%d"
 
 
 class ConditionalBackgrounds(xbmcgui.WindowXMLDialog):
-
+    '''Dialog to allow the user to set multiple timeframes to override the background'''
     backgrounds_control = None
     all_backgrounds = []
 
@@ -30,7 +30,7 @@ class ConditionalBackgrounds(xbmcgui.WindowXMLDialog):
         log_msg("ConditionalBackgrounds exited")
 
     def refresh_listing(self):
-
+        '''reload the listing'''
         # clear list first
         self.backgrounds_control.reset()
 
@@ -44,15 +44,15 @@ class ConditionalBackgrounds(xbmcgui.WindowXMLDialog):
         self.backgrounds_control.addItem(listitem)
 
         count = 0
-        for bg in self.all_backgrounds:
-            label = bg["name"]
-            if time_in_range(bg["startdate"], bg["enddate"], datetime.now().strftime(DATE_FORMAT)):
+        for background in self.all_backgrounds:
+            label = background["name"]
+            if time_in_range(background["startdate"], background["enddate"], datetime.now().strftime(DATE_FORMAT)):
                 label = label + " " + xbmc.getLocalizedString(461)
-            listitem = xbmcgui.ListItem(label=label, iconImage=bg["background"])
+            listitem = xbmcgui.ListItem(label=label, iconImage=background["background"])
             desc = "[B]%s:[/B] %s [CR][B]%s:[/B] %s" % (xbmc.getLocalizedString(19128),
-                                                        bg["startdate"],
+                                                        background["startdate"],
                                                         xbmc.getLocalizedString(19129),
-                                                        bg["enddate"])
+                                                        background["enddate"])
             listitem.setProperty("description", desc)
             listitem.setProperty("Addon.Summary", desc)
             listitem.setLabel2(desc)
@@ -62,24 +62,22 @@ class ConditionalBackgrounds(xbmcgui.WindowXMLDialog):
         xbmc.executebuiltin("Control.SetFocus(6)")
 
     def onInit(self):
-        self.action_exitkeys_id = [10, 13]
+        '''Triggers when the dialog is drawn'''
         self.backgrounds_control = self.getControl(6)
         self.getControl(1).setLabel(self.addon.getLocalizedString(32070))
         self.getControl(5).setVisible(True)
         self.getControl(3).setVisible(False)
         self.refresh_listing()
 
-    def onFocus(self, controlId):
-        pass
-
     def onAction(self, action):
-
+        '''triggers if an kodi action is performed'''
         ACTION_CANCEL_DIALOG = (9, 10, 92, 216, 247, 257, 275, 61467, 61448, )
 
         if action.getId() in ACTION_CANCEL_DIALOG:
-            self.closeDialog()
+            self.close_dialog()
 
-    def closeDialog(self):
+    def close_dialog(self):
+        '''called to close the dialog and write the settings to disk'''
         if not xbmcvfs.exists(CACHE_PATH):
             xbmcvfs.mkdir(CACHE_PATH)
         # write backgrounds to file
@@ -89,6 +87,7 @@ class ConditionalBackgrounds(xbmcgui.WindowXMLDialog):
         self.close()
 
     def onClick(self, controlID):
+        '''called when the user clicks the dialog'''
         error = False
 
         if(controlID == 6):
@@ -114,9 +113,9 @@ class ConditionalBackgrounds(xbmcgui.WindowXMLDialog):
                                                  date_today, type=xbmcgui.INPUT_ALPHANUM)
                 try:
                     # check if the dates are valid
-                    dt = datetime(*(time.strptime(startdate, DATE_FORMAT)[0:6]))
-                    dt = datetime(*(time.strptime(enddate, DATE_FORMAT)[0:6]))
-                    dt = None
+                    date_time = datetime(*(time.strptime(startdate, DATE_FORMAT)[0:6]))
+                    date_time = datetime(*(time.strptime(enddate, DATE_FORMAT)[0:6]))
+                    date_time = None
                 except Exception as exc:
                     log_exception(__name__, exc)
                     error = True
@@ -155,8 +154,8 @@ class ConditionalBackgrounds(xbmcgui.WindowXMLDialog):
                                                      currentvalues["enddate"], type=xbmcgui.INPUT_ALPHANUM)
                     try:
                         # check if the dates are valid
-                        dt = datetime(*(time.strptime(startdate, DATE_FORMAT)[0:6]))
-                        dt = datetime(*(time.strptime(startdate, DATE_FORMAT)[0:6]))
+                        date_time = datetime(*(time.strptime(startdate, DATE_FORMAT)[0:6]))
+                        date_time = datetime(*(time.strptime(startdate, DATE_FORMAT)[0:6]))
                     except Exception as exc:
                         log_exception(__name__, exc)
                         error = True
@@ -173,25 +172,27 @@ class ConditionalBackgrounds(xbmcgui.WindowXMLDialog):
 
         if controlID == 5:
             # close
-            self.closeDialog()
- 
+            self.close_dialog()
+
 # GLOBAL HELPERS - ALSO ACCESSED BY BACKGROUNDS UPDATER SERVICE
- 
+
+
 def get_cond_background():
-    '''get the current active conditional background (if any)'''
+    '''get the current active conditional background (if any) - called by the background service'''
     background = ""
     all_cond_backgrounds = get_cond_backgrounds()
     if all_cond_backgrounds:
         date_today = datetime.now().strftime(DATE_FORMAT)
-        for bg in all_cond_backgrounds:
-            if time_in_range(bg["startdate"], bg["enddate"], date_today):
-                background = bg["background"]
+        for background in all_cond_backgrounds:
+            if time_in_range(background["startdate"], background["enddate"], date_today):
+                background = background["background"]
                 break
     return background
 
+
 def get_cond_backgrounds():
+    '''read all backgrounds that are setup'''
     all_backgrounds = []
-    # read all backgrounds that are setup
     if xbmcvfs.exists(CACHE_FILE):
         text_file = xbmcvfs.File(CACHE_FILE)
         try:
@@ -203,8 +204,10 @@ def get_cond_backgrounds():
             text_file.close()
     return all_backgrounds
 
-def time_in_range(start, end, x):
+
+def time_in_range(start, end, date_time):
+    '''determine if the given time is within the range'''
     if start <= end:
-        return start <= x <= end
+        return start <= date_time <= end
     else:
-        return start <= x or x <= end
+        return start <= date_time or date_time <= end
