@@ -6,10 +6,8 @@
     a helper service for Kodi skins providing rotating backgrounds
 '''
 
-import threading
 import thread
 import random
-import base64
 import os
 from datetime import timedelta
 from utils import log_msg, log_exception, get_content_path, urlencode, ADDON_ID
@@ -45,6 +43,7 @@ class BackgroundsUpdater():
         self.wallimages = WallImages(self.win, self.get_images_from_path)
 
     def stop(self):
+        '''stop running our background service '''
         log_msg("BackgroundsUpdater - stop called", xbmc.LOGNOTICE)
         self.exit = True
         self.smartshortcuts.exit = True
@@ -55,6 +54,7 @@ class BackgroundsUpdater():
         del self.kodimonitor
 
     def run(self):
+        '''called to start our background service '''
         log_msg("BackgroundsUpdater - started", xbmc.LOGNOTICE)
         self.get_config()
         backgrounds_task_interval = 25
@@ -125,8 +125,8 @@ class BackgroundsUpdater():
                     limitrange = xbmc.getInfoLabel("Skin.String(%s.EnableWallImages)" % key)
                     if limitrange:
                         self.wallimages.manual_walls[key] = int(limitrange)
-        except Exception as e:
-            log_exception(__name__, e)
+        except Exception as exc:
+            log_exception(__name__, exc)
 
     @use_cache(0.2, True)
     def get_images_from_path(self, lib_path, limit=50):

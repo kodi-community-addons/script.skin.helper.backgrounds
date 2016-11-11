@@ -1,3 +1,13 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+'''
+    Allows the user to globally override the skin's background on certain date conditions.
+    For example setup a christmas background at late december etc.
+    By launching this script entrypoint the user will be presented with a dialog to add,
+    delete and edit conditional overrides.
+'''
+
 from xml.dom.minidom import parse
 from utils import log_msg, ADDON_ID, log_exception
 import xbmc
@@ -71,9 +81,9 @@ class ConditionalBackgrounds(xbmcgui.WindowXMLDialog):
 
     def onAction(self, action):
         '''triggers if an kodi action is performed'''
-        ACTION_CANCEL_DIALOG = (9, 10, 92, 216, 247, 257, 275, 61467, 61448, )
 
-        if action.getId() in ACTION_CANCEL_DIALOG:
+        # exit command issued
+        if action.getId() in (9, 10, 92, 216, 247, 257, 275, 61467, 61448, ):
             self.close_dialog()
 
     def close_dialog(self):
@@ -93,8 +103,8 @@ class ConditionalBackgrounds(xbmcgui.WindowXMLDialog):
         if(controlID == 6):
             # edit
             item = self.backgrounds_control.getSelectedItem()
-            id = item.getProperty("id")
-            if id == "add":
+            item_id = item.getProperty("id")
+            if item_id == "add":
                 # add
                 date_today = datetime.now().strftime(DATE_FORMAT)
                 name = xbmcgui.Dialog().input(self.addon.getLocalizedString(32058), type=xbmcgui.INPUT_ALPHANUM)
@@ -141,8 +151,8 @@ class ConditionalBackgrounds(xbmcgui.WindowXMLDialog):
                         self.refresh_listing()
                 elif deleteorchange:
                     # edit entry
-                    id = int(id)
-                    currentvalues = self.all_backgrounds[id]
+                    item_id = int(item_id)
+                    currentvalues = self.all_backgrounds[item_id]
                     name = xbmcgui.Dialog().input(
                         self.addon.getLocalizedString(32058),
                         currentvalues["name"],
@@ -163,7 +173,7 @@ class ConditionalBackgrounds(xbmcgui.WindowXMLDialog):
                     if not name or not background or error:
                         xbmcgui.Dialog().ok(xbmc.getLocalizedString(329), self.addon.getLocalizedString(32032))
                     else:
-                        self.all_backgrounds[id] = {
+                        self.all_backgrounds[item_id] = {
                             "name": name,
                             "background": background,
                             "startdate": startdate,

@@ -8,7 +8,7 @@
     Default is 60 seconds.
 '''
 
-from utils import get_content_path, log_msg, ADDON_ID
+from utils import log_msg, ADDON_ID
 from artutils import process_method_on_list, get_clean_image
 import xbmc
 import xbmcvfs
@@ -35,8 +35,8 @@ class WallImages():
 
         # PIL fails on FTV devices ?
         try:
-            im = Image.new("RGB", (1, 1))
-            del im
+            img = Image.new("RGB", (1, 1))
+            del img
         except Exception:
             self.has_pil = False
             log_msg("Wall backgrounds disabled - PIL is not supported on this device!", xbmc.LOGWARNING)
@@ -95,7 +95,7 @@ class WallImages():
             xbmcvfs.mkdir(WALLS_PATH)
 
         # reuse the existing images - do not rebuild all the time
-        dirs, files = xbmcvfs.listdir(WALLS_PATH)
+        files = xbmcvfs.listdir(WALLS_PATH)[1]
         for file in files:
             # return color and bw image combined - only if both are found
             color_path = WALLS_PATH + file.replace("_BW", "")

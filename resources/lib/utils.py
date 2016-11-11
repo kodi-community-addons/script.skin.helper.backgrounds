@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+'''Various helper methods'''
+
 import xbmcgui
 import xbmc
 import sys

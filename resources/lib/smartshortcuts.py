@@ -1,11 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import get_content_path, log_msg, log_exception, ADDON_ID
-from artutils import detect_plugin_content, KodiDb
-from simplecache import use_cache
-import xbmc
-import xbmcvfs
-import thread
 
 '''
 Smart shortcuts feature
@@ -16,6 +10,12 @@ It is most convenient used with the skin shortcuts script but can offcourse be u
 The most important behaviour of the smart shortcuts feature is that is pulls images from the library path
 so you can have content based backgrounds.
 '''
+
+from utils import get_content_path, log_msg, log_exception, ADDON_ID
+from artutils import detect_plugin_content, KodiDb
+import xbmc
+import xbmcvfs
+import thread
 
 
 class SmartShortCuts():
@@ -512,5 +512,5 @@ class SmartShortCuts():
                 data = data.replace("ICONIMAGE", icon_image)
                 shortcutsfile.write(data)
                 shortcutsfile.close()
-        except Exception as e:
-            log_exception(__name__, e)
+        except Exception as exc:
+            log_exception(__name__, exc)
