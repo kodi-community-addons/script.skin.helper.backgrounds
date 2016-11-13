@@ -264,7 +264,7 @@ class BackgroundsUpdater():
         '''update all our provided backgrounds'''
 
         # conditional background
-        self.win.setProperty("SkinHelper.ConditionalBackground", get_cond_background())
+        self.win.setProperty("SkinHelper.ConditionalBackground", get_cond_background() )
 
         # movies backgrounds
         if xbmc.getCondVisibility("Library.HasContent(movies)"):

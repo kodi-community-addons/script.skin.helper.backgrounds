@@ -193,9 +193,9 @@ def get_cond_background():
     all_cond_backgrounds = get_cond_backgrounds()
     if all_cond_backgrounds:
         date_today = datetime.now().strftime(DATE_FORMAT)
-        for background in all_cond_backgrounds:
-            if time_in_range(background["startdate"], background["enddate"], date_today):
-                background = background["background"]
+        for item in all_cond_backgrounds:
+            if time_in_range(item["startdate"], item["enddate"], date_today):
+                background = item["background"]
                 break
     return background
 
