@@ -8,7 +8,6 @@
     delete and edit conditional overrides.
 '''
 
-from xml.dom.minidom import parse
 from utils import log_msg, ADDON_ID, log_exception
 import xbmc
 import xbmcgui
@@ -125,7 +124,7 @@ class ConditionalBackgrounds(xbmcgui.WindowXMLDialog):
                     # check if the dates are valid
                     date_time = datetime(*(time.strptime(startdate, DATE_FORMAT)[0:6]))
                     date_time = datetime(*(time.strptime(enddate, DATE_FORMAT)[0:6]))
-                    date_time = None
+                    del date_time
                 except Exception as exc:
                     log_exception(__name__, exc)
                     error = True

@@ -210,7 +210,7 @@ class BackgroundsUpdater():
                             files2 = xbmcvfs.listdir(item)[1]
                             count = 0
                             for count, filename in enumerate(files2):
-                                if ((filename.endswith(".jpg") or filename.endswith(".png")) and count < 15):
+                                if (filename.endswith(".jpg") or filename.endswith(".png")) and count < 15:
                                     filename = filename.decode("utf-8")
                                     image = os.path.join(item, filename)
                                     images.append({"fanart": image, "title": filename})
@@ -220,7 +220,7 @@ class BackgroundsUpdater():
         return images
 
     @use_cache(1)
-    def get_global_background(self, win_prop, keys):
+    def get_global_background(self, keys):
         '''get backgrounds from multiple other collections'''
         images = []
         for key in keys:
@@ -257,7 +257,7 @@ class BackgroundsUpdater():
 
     def set_global_background(self, win_prop, keys, label=None):
         '''set random background from multiple other collections'''
-        images = self.get_global_background(win_prop, keys=keys)
+        images = self.get_global_background(keys)
         self.set_background(win_prop, "", images, label=label)
 
     def update_backgrounds(self):

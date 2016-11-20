@@ -41,7 +41,7 @@ class SmartShortCuts():
         if self.exit or self.build_busy:
             return
         else:
-            build_busy = True
+            self.build_busy = True
             # build all smart shortcuts nodes
             thread.start_new_thread(self.plex_nodes, ())
             thread.start_new_thread(self.netflix_nodes, ())

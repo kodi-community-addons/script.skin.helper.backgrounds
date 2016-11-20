@@ -8,8 +8,8 @@
     Default is 60 seconds.
 '''
 
-from utils import log_msg, ADDON_ID
-from artutils import process_method_on_list, get_clean_image
+from utils import log_msg
+from artutils import process_method_on_list
 import xbmc
 import xbmcvfs
 import random
