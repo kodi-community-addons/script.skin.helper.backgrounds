@@ -70,7 +70,11 @@ class SmartShortCuts():
                         for content_string in content_strings:
                             key = "emby.nodes.%s%s" % (count, content_string)
                             item_path = self.win.getProperty("emby.nodes.%s%s.path" % (count, content_string))
-                            label = self.win.getProperty("emby.nodes.%s%s.title" % (count, content_string))
+                            mainlabel = self.win.getProperty("emby.nodes.%s.title" % (count))
+                            sublabel = self.win.getProperty("emby.nodes.%s%s.title" % (count, content_string))
+                            label = "%s: %s" %(mainlabel, sublabel)
+                            if not content_string:
+                                label = mainlabel
                             if item_path:
                                 content = get_content_path(item_path)
                                 nodes.append(("%s.image" % key, content, label))
