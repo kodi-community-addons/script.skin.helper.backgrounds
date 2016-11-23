@@ -35,7 +35,7 @@ class BackgroundsUpdater():
     custom_picturespath = ""
 
     def __init__(self):
-        self.cache = SimpleCache()
+        self.cache = SimpleCache(True)
         self.kodidb = KodiDb()
         self.win = xbmcgui.Window(10000)
         self.kodimonitor = xbmc.Monitor()
@@ -128,7 +128,7 @@ class BackgroundsUpdater():
         except Exception as exc:
             log_exception(__name__, exc)
 
-    @use_cache(0.2, True)
+    @use_cache(0.2)
     def get_images_from_path(self, lib_path, limit=50):
         '''get all images from the given vfs path'''
         result = []

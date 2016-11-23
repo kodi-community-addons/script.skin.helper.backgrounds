@@ -225,4 +225,4 @@ class WallImages():
     def update_manualwalls(self):
         '''manual wall images, provides a collection of images which are randomly changing'''
         for key, value in self.manual_walls.iteritems():
-            set_manualwall(key, value)
+            self.set_manualwall(key, value)
