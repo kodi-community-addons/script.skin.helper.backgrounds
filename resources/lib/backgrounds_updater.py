@@ -20,7 +20,6 @@ from conditional_backgrounds import get_cond_background
 from smartshortcuts import SmartShortCuts
 from wallimages import WallImages
 from artutils import KodiDb, get_clean_image
-from collections import OrderedDict
 
 
 class BackgroundsUpdater():
@@ -30,15 +29,20 @@ class BackgroundsUpdater():
     backgrounds_delay = 0
     walls_delay = 30
     all_backgrounds_keys = {}
-    all_backgrounds_labels = OrderedDict()
+    
     pvr_bg_recordingsonly = False
     custom_picturespath = ""
 
     def __init__(self):
-        self.cache = SimpleCache(True)
+        self.cache = SimpleCache()
         self.kodidb = KodiDb()
         self.win = xbmcgui.Window(10000)
         self.kodimonitor = xbmc.Monitor()
+        try:
+            from collections import OrderedDict
+            self.all_backgrounds_labels = OrderedDict()
+        except:
+            self.all_backgrounds_labels = {}
         self.smartshortcuts = SmartShortCuts(self.cache, self.win)
         self.wallimages = WallImages(self.win, self.get_images_from_path)
 
