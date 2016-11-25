@@ -38,13 +38,9 @@ class BackgroundsUpdater():
         self.kodidb = KodiDb()
         self.win = xbmcgui.Window(10000)
         self.kodimonitor = xbmc.Monitor()
-        try:
-            from collections import OrderedDict
-            self.all_backgrounds_labels = OrderedDict()
-        except:
-            self.all_backgrounds_labels = {}
+        self.all_backgrounds_labels = []
         self.smartshortcuts = SmartShortCuts(self.cache, self.win)
-        self.wallimages = WallImages(self.win, self.get_images_from_path)
+        self.wallimages = WallImages(self.win, self.get_images_from_vfspath)
 
     def stop(self):
         '''stop running our background service '''
@@ -63,7 +59,7 @@ class BackgroundsUpdater():
         self.get_config()
         backgrounds_task_interval = 25
         walls_task_interval = 25
-        delayed_task_interval = 116
+        delayed_task_interval = 112
 
         while not self.kodimonitor.abortRequested():
 
@@ -133,7 +129,7 @@ class BackgroundsUpdater():
             log_exception(__name__, exc)
 
     @use_cache(0.2)
-    def get_images_from_path(self, lib_path, limit=50):
+    def get_images_from_vfspath(self, lib_path, limit=50):
         '''get all images from the given vfs path'''
         result = []
         # safety check: check if no library windows are active to prevent any addons setting the view
@@ -229,7 +225,7 @@ class BackgroundsUpdater():
         images = []
         for key in keys:
             if key in self.all_backgrounds_keys:
-                imgs = self.get_images_from_path(self.all_backgrounds_keys[key])
+                imgs = self.get_images_from_vfspath(self.all_backgrounds_keys[key])
                 if imgs:
                     images += imgs
         return images
@@ -237,7 +233,7 @@ class BackgroundsUpdater():
     def set_background(self, win_prop, lib_path, images=None, fallback_image="", label=None):
         '''set the window property for the background image'''
         if not images and lib_path:
-            images = self.get_images_from_path(lib_path)
+            images = self.get_images_from_vfspath(lib_path)
             if win_prop not in self.all_backgrounds_keys:
                 self.all_backgrounds_keys[win_prop] = lib_path
         if images:
@@ -250,12 +246,12 @@ class BackgroundsUpdater():
         else:
             self.win.setProperty(win_prop, fallback_image)
         # store the label of the background for later exchange with skinshortcuts
-        if win_prop not in self.all_backgrounds_labels:
+        if not any(win_prop in item for item in self.all_backgrounds_labels):
             if label and isinstance(label, int):
                 label = xbmc.getInfoLabel("$ADDON[%s %s]" % (ADDON_ID, label))
             elif not label:
                 label = win_prop
-            self.all_backgrounds_labels[win_prop] = label
+            self.all_backgrounds_labels.append( (win_prop, label) )
             self.win.setProperty("SkinHelper.AllBackgrounds", repr(self.all_backgrounds_labels))
             self.win.setProperty("%s.label" % win_prop, label)
 
@@ -342,10 +338,10 @@ class BackgroundsUpdater():
 
         # pvr background
         if xbmc.getCondVisibility("PVR.HasTvChannels"):
-            images = self.get_images_from_path(
+            images = self.get_images_from_vfspath(
                 "plugin://script.skin.helper.widgets/?mediatype=pvr&action=recordings&limit=50")
             if not self.pvr_bg_recordingsonly:
-                tv_images = self.get_images_from_path(
+                tv_images = self.get_images_from_vfspath(
                     "plugin://script.skin.helper.widgets/?mediatype=pvr&action=channels&limit=25")
                 if not images and tv_images:
                     images = tv_images

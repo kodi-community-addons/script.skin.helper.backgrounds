@@ -29,9 +29,9 @@ class WallImages():
     all_backgrounds_keys = {}
     has_pil = True
 
-    def __init__(self, win, get_images_from_path):
+    def __init__(self, win, get_images_from_vfspath):
         self.win = win
-        self.get_images_from_path = get_images_from_path
+        self.get_images_from_vfspath = get_images_from_vfspath
 
         # PIL fails on FTV devices ?
         try:
@@ -67,7 +67,7 @@ class WallImages():
             wall_images = self.all_wall_images[wall_win_prop]
         elif win_prop in self.all_backgrounds_keys:
             # no wall images in cache, we must retrieve them
-            images = self.get_images_from_path(self.all_backgrounds_keys[win_prop], 1000)
+            images = self.get_images_from_vfspath(self.all_backgrounds_keys[win_prop], 1000)
             if images:
                 wall_images = self.get_wallimages(wall_win_prop, images, wall_type)
                 self.all_wall_images[wall_win_prop] = wall_images
@@ -201,7 +201,7 @@ class WallImages():
 
     def set_manualwall(self, win_prop, limit=20):
         '''set a manual wall by providing the skinner randomly changing images in window props'''
-        images = self.get_images_from_path(self.all_backgrounds_keys[win_prop], 1000)
+        images = self.get_images_from_vfspath(self.all_backgrounds_keys[win_prop], 1000)
         if images:
             if self.win.getProperty("%s.Wall.0" % win_prop):
                 # 1st run was already done so only refresh one random image in the collection...
