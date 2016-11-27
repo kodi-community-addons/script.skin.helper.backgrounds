@@ -128,7 +128,7 @@ class BackgroundsUpdater():
         except Exception as exc:
             log_exception(__name__, exc)
 
-    @use_cache(0.2)
+    @use_cache(7)
     def get_images_from_vfspath(self, lib_path, limit=50):
         '''get all images from the given vfs path'''
         result = []
