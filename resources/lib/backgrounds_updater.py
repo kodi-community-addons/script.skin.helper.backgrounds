@@ -128,12 +128,12 @@ class BackgroundsUpdater():
         except Exception as exc:
             log_exception(__name__, exc)
 
-    @use_cache(7)
+    @use_cache(0.5)
     def get_images_from_vfspath(self, lib_path, limit=50):
         '''get all images from the given vfs path'''
         result = []
         # safety check: check if no library windows are active to prevent any addons setting the view
-        if xbmc.getCondVisibility("Window.IsMedia") or self.exit:
+        if (xbmc.getCondVisibility("Window.IsMedia") and "plugin" in lib_path) or self.exit:
             return None  # return None so the cache is ignored
 
         lib_path = get_content_path(lib_path)
@@ -158,8 +158,8 @@ class BackgroundsUpdater():
             if not image.get("thumbnail") and media.get("thumbnail"):
                 image["thumbnail"] = get_clean_image(media["thumbnail"])
 
-            # only append items which have a fanart or thumbnail image
-            if image.get("fanart") or image.get("thumbnail"):
+            # only append items which have a fanart image
+            if image.get("fanart"):
                 # also append other art to the dict
                 image["title"] = media.get('title', '')
                 if not image.get("title"):

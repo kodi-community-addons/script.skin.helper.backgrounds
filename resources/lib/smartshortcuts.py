@@ -240,7 +240,7 @@ class SmartShortCuts():
             nodes = []
             favs = KodiDb().favourites()
             for count, fav in enumerate(favs):
-                if fav.get("windowparameter"):
+                if fav["type"] == "window":
                     content = fav["windowparameter"]
                     # check if this is a valid path with content
                     if ("script://" not in content.lower() and

@@ -144,7 +144,7 @@ class ConditionalBackgrounds(xbmcgui.WindowXMLDialog):
                 if not deleteorchange:
                     # delete entry
                     dialog = xbmcgui.Dialog()
-                    if dialog.yesno(xbmc.getLocalizedString(122) + " " + item.getLabel() + " ?",
+                    if dialog.yesno(xbmc.getLocalizedString(122) + u" " + item.getLabel().decode("utf-8") + u" ?",
                                     xbmc.getLocalizedString(125)):
                         del self.all_backgrounds[int(item.getProperty("id"))]
                         self.refresh_listing()
