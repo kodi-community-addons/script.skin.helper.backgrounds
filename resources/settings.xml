@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <category label="32000">
-        <setting id="backgrounds_delay" type="number" label="32002" default="30" />
-        <setting id="pvr_bg_recordingsonly" type="bool" label="32004" default="false" visible="gt(-1,0)"/>
-        <setting id="enable_custom_images_path" type="bool" label="32005" default="" visible="gt(-2,0)"/>
-        <setting id="custom_images_path" type="folder" label="32006" default="" visible="gt(-3,0) + eq(-1,true)"/>
+    <category label="32000" visible="Skin.String(SkinHelper.RandomFanartDelay)">
+        <setting id="pvr_bg_recordingsonly" type="bool" label="32004" default="false"/>
+        <setting id="enable_custom_images_path" type="bool" label="32005" default=""/>
+        <setting id="custom_images_path" type="folder" label="32006" default="" visible="eq(-1,true)"/>
     </category>
     <category label="32001">
         <setting id="wallimages_delay" type="number" label="32003" default="60"/>

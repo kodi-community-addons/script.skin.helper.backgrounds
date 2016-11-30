@@ -104,7 +104,12 @@ class BackgroundsUpdater():
         '''gets various settings for the script as set by the skinner or user'''
 
         addon = xbmcaddon.Addon(ADDON_ID)
-        self.backgrounds_delay = int(addon.getSetting("backgrounds_delay"))
+        # skinner (or user) enables the random fanart images by setting the randomfanartdelay skin string
+        try:
+            self.backgrounds_delay = int(xbmc.getInfoLabel("Skin.String(SkinHelper.RandomFanartDelay)"))
+        except Exception:
+            pass
+        
         self.walls_delay = int(addon.getSetting("wallimages_delay"))
         self.wallimages.max_wallimages = int(addon.getSetting("max_wallimages"))
         self.pvr_bg_recordingsonly = addon.getSetting("pvr_bg_recordingsonly") == "true"
@@ -113,9 +118,6 @@ class BackgroundsUpdater():
         else:
             self.custom_picturespath = ""
         del addon
-
-        # set the current backgrounds delay in a skin string for usage of other stuff in the skin
-        xbmc.executebuiltin("Skin.SetString(SkinHelper.RandomFanartDelay,%s)" % self.backgrounds_delay)
 
         try:
             # skinner can enable manual wall images generation so check for these settings
