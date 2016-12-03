@@ -29,7 +29,7 @@ class BackgroundsUpdater():
     backgrounds_delay = 0
     walls_delay = 30
     all_backgrounds_keys = {}
-    
+
     pvr_bg_recordingsonly = False
     custom_picturespath = ""
 
@@ -109,7 +109,7 @@ class BackgroundsUpdater():
             self.backgrounds_delay = int(xbmc.getInfoLabel("Skin.String(SkinHelper.RandomFanartDelay)"))
         except Exception:
             pass
-        
+
         self.walls_delay = int(addon.getSetting("wallimages_delay"))
         self.wallimages.max_wallimages = int(addon.getSetting("max_wallimages"))
         self.pvr_bg_recordingsonly = addon.getSetting("pvr_bg_recordingsonly") == "true"
@@ -253,7 +253,7 @@ class BackgroundsUpdater():
                 label = xbmc.getInfoLabel("$ADDON[%s %s]" % (ADDON_ID, label))
             elif not label:
                 label = win_prop
-            self.all_backgrounds_labels.append( (win_prop, label) )
+            self.all_backgrounds_labels.append((win_prop, label))
             self.win.setProperty("SkinHelper.AllBackgrounds", repr(self.all_backgrounds_labels))
             self.win.setProperty("%s.label" % win_prop, label)
 
@@ -266,7 +266,7 @@ class BackgroundsUpdater():
         '''update all our provided backgrounds'''
 
         # conditional background
-        self.win.setProperty("SkinHelper.ConditionalBackground", get_cond_background() )
+        self.win.setProperty("SkinHelper.ConditionalBackground", get_cond_background())
 
         # movies backgrounds
         if xbmc.getCondVisibility("Library.HasContent(movies)"):
@@ -340,11 +340,14 @@ class BackgroundsUpdater():
 
         # pvr background
         if xbmc.getCondVisibility("PVR.HasTvChannels"):
+            widgetreload = self.win.getProperty("widgetreload2")
             images = self.get_images_from_vfspath(
-                "plugin://script.skin.helper.widgets/?mediatype=pvr&action=recordings&limit=50")
+                "plugin://script.skin.helper.widgets/?mediatype=pvr"
+                "&action=recordings&limit=50&reload=%s" % widgetreload)
             if not self.pvr_bg_recordingsonly:
                 tv_images = self.get_images_from_vfspath(
-                    "plugin://script.skin.helper.widgets/?mediatype=pvr&action=channels&limit=25")
+                    "plugin://script.skin.helper.widgets/?mediatype=pvr"
+                    "&action=channels&limit=25&reload=%s" % widgetreload)
                 if not images and tv_images:
                     images = tv_images
                 elif images and tv_images:
