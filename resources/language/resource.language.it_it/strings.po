@@ -26,11 +26,11 @@ msgstr "Sfondi Muro"
 
 msgctxt "#32002"
 msgid "Interval in seconds for rotating backgrounds (0 to disable)"
-msgstr "Intervallo in secondi la rotazione degli sfondi (0 per disabilitare)"
+msgstr "Intervallo in secondi per la rotazione degli sfondi (0 per disabilitare)"
 
 msgctxt "#32003"
 msgid "Interval in seconds for rotating wall images (0 to disable)"
-msgstr "Intervallo in secondi la rotazione delle immagini muro (0 per disabilitare)"
+msgstr "Intervallo in secondi per la rotazione delle immagini muro (0 per disabilitare)"
 
 msgctxt "#32004"
 msgid "Only use images from recordings for random PVR background"
