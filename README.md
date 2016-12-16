@@ -6,8 +6,14 @@ a helper service for Kodi skins providing rotating backgrounds
 ### Backgrounds provided by the script
 The script has a background scanner to provide some rotating fanart backgrounds which can be used in your skin as backgrounds. The backgrounds are available in window properties.
 
-Note: In the addon settings users can configure the rotation speed/interval or even disable the entire service.
-Default is 30 seconds.
+IMPORTANT NOTE:
+
+To enable the rotating images, you must set a skin string in your skin/addon:
+Skin.SetString(SkinHelper.RandomFanartDelay, 30)
+
+The value defines the interval for the image rotation.
+Setting the value to 0 clearing it disables the background service.
+Recommended value is 30 seconds.
 
 
 | property 			| description |
