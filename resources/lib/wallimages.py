@@ -13,7 +13,10 @@ from artutils import process_method_on_list
 import xbmc
 import xbmcvfs
 import random
-from PIL import Image
+try:
+    from PIL import Image
+except ImportError:
+    import Image
 import io
 
 WALLS_PATH = "special://profile/addon_data/script.skin.helper.backgrounds/wall_backgrounds/"
