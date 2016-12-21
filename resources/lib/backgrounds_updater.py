@@ -39,12 +39,14 @@ class BackgroundsUpdater():
         self.win = xbmcgui.Window(10000)
         self.kodimonitor = xbmc.Monitor()
         self.all_backgrounds_labels = []
-        self.smartshortcuts = SmartShortCuts(self.cache, self.win)
+        self.smartshortcuts = SmartShortCuts(self)
         self.wallimages = WallImages(self.win, self.get_images_from_vfspath)
+        self.winprops = {}
 
     def stop(self):
         '''stop running our background service '''
         log_msg("BackgroundsUpdater - stop called", xbmc.LOGNOTICE)
+        self.winpropcache(True)
         self.exit = True
         self.smartshortcuts.exit = True
         self.wallimages.exit = True
@@ -56,6 +58,7 @@ class BackgroundsUpdater():
     def run(self):
         '''called to start our background service '''
         log_msg("BackgroundsUpdater - started", xbmc.LOGNOTICE)
+        self.winpropcache()
         self.get_config()
         backgrounds_task_interval = 25
         walls_task_interval = 25
@@ -103,6 +106,9 @@ class BackgroundsUpdater():
     def get_config(self):
         '''gets various settings for the script as set by the skinner or user'''
 
+        # set all backgrounds in global cache for quick startup
+        self.winpropcache(True)
+
         addon = xbmcaddon.Addon(ADDON_ID)
         # skinner (or user) enables the random fanart images by setting the randomfanartdelay skin string
         try:
@@ -129,6 +135,21 @@ class BackgroundsUpdater():
                         self.wallimages.manual_walls[key] = int(limitrange)
         except Exception as exc:
             log_exception(__name__, exc)
+
+    def set_winprop(self, key, value):
+        '''sets a window property and writes it to our global list'''
+        self.winprops[key] = value
+        self.win.setProperty(key.encode("utf-8"), value.encode("utf-8"))
+
+    def winpropcache(self, setcache=False):
+        '''sets/gets all our window props in a global cache to load them immediately at startup'''
+        if setcache:
+            self.cache.set("skinhelper.backgrounds", self.winprops)
+        else:
+            cache = self.cache.get("skinhelper.backgrounds")
+            if cache:
+                for key, value in cache.iteritems():
+                    self.win.setProperty(key.encode("utf-8"), value.encode("utf-8"))
 
     @use_cache(0.5)
     def get_images_from_vfspath(self, lib_path, limit=50):
@@ -242,11 +263,11 @@ class BackgroundsUpdater():
             image = random.choice(images)
             for key, value in image.iteritems():
                 if key == "fanart":
-                    self.win.setProperty(win_prop, value)
+                    self.set_winprop(win_prop, value)
                 else:
-                    self.win.setProperty("%s.%s" % (win_prop, key), value)
+                    self.set_winprop("%s.%s" % (win_prop, key), value)
         else:
-            self.win.setProperty(win_prop, fallback_image)
+            self.set_winprop(win_prop, fallback_image)
         # store the label of the background for later exchange with skinshortcuts
         if not any(win_prop in item for item in self.all_backgrounds_labels):
             if label and isinstance(label, int):
@@ -254,8 +275,8 @@ class BackgroundsUpdater():
             elif not label:
                 label = win_prop
             self.all_backgrounds_labels.append((win_prop, label))
-            self.win.setProperty("SkinHelper.AllBackgrounds", repr(self.all_backgrounds_labels))
-            self.win.setProperty("%s.label" % win_prop, label)
+            self.set_winprop("SkinHelper.AllBackgrounds", repr(self.all_backgrounds_labels))
+            self.set_winprop("%s.label" % win_prop, label)
 
     def set_global_background(self, win_prop, keys, label=None):
         '''set random background from multiple other collections'''

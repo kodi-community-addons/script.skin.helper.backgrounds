@@ -25,9 +25,8 @@ class SmartShortCuts():
     toplevel_nodes = []
     build_busy = False
 
-    def __init__(self, cache, win):
-        self.cache = cache
-        self.win = win
+    def __init__(self, bgupdater):
+        self.bgupdater = bgupdater
 
     def get_smartshortcuts_nodes(self):
         '''return all smartshortcuts paths for which an image should be generated'''
@@ -43,13 +42,13 @@ class SmartShortCuts():
         else:
             self.build_busy = True
             # build all smart shortcuts nodes
-            thread.start_new_thread(self.plex_nodes, ())
-            thread.start_new_thread(self.netflix_nodes, ())
             self.emby_nodes()
             self.playlists_nodes()
             self.favourites_nodes()
+            self.plex_nodes()
+            self.netflix_nodes()
             # set all toplevel nodes in window prop for exchange with skinshortcuts
-            self.win.setProperty("all_smartshortcuts", repr(self.toplevel_nodes))
+            self.bgupdater.set_winprop("all_smartshortcuts", repr(self.toplevel_nodes))
             self.build_busy = False
 
     def emby_nodes(self):
@@ -57,7 +56,7 @@ class SmartShortCuts():
         if not self.all_nodes.get("emby"):
             nodes = []
             if xbmc.getCondVisibility("System.HasAddon(plugin.video.emby) + Skin.HasSetting(SmartShortcuts.emby)"):
-                emby_property = self.win.getProperty("emby.nodes.total")
+                emby_property = self.bgupdater.win.getProperty("emby.nodes.total")
                 if emby_property:
                     content_strings = ["", ".recent", ".inprogress", ".unwatched", ".recentepisodes",
                                        ".inprogressepisodes", ".nextepisodes", "recommended"]
@@ -69,10 +68,10 @@ class SmartShortCuts():
                             return
                         for content_string in content_strings:
                             key = "emby.nodes.%s%s" % (count, content_string)
-                            item_path = self.win.getProperty("emby.nodes.%s%s.path" % (count, content_string))
-                            mainlabel = self.win.getProperty("emby.nodes.%s.title" % (count))
-                            sublabel = self.win.getProperty("emby.nodes.%s%s.title" % (count, content_string))
-                            label = "%s: %s" %(mainlabel, sublabel)
+                            item_path = self.bgupdater.win.getProperty("emby.nodes.%s%s.path" % (count, content_string))
+                            mainlabel = self.bgupdater.win.getProperty("emby.nodes.%s.title" % (count))
+                            sublabel = self.bgupdater.win.getProperty("emby.nodes.%s%s.title" % (count, content_string))
+                            label = "%s: %s" % (mainlabel, sublabel)
                             if not content_string:
                                 label = mainlabel
                             if item_path:
@@ -105,18 +104,18 @@ class SmartShortCuts():
                 content_strings = ["", ".ondeck", ".recent", ".unwatched"]
                 total_nodes = 50
                 for i in range(total_nodes):
-                    if not self.win.getProperty("plexbmc.%s.title" % i) or self.exit:
+                    if not self.bgupdater.win.getProperty("plexbmc.%s.title" % i) or self.exit:
                         break
                     for content_string in content_strings:
                         key = "plexbmc.%s%s" % (i, content_string)
-                        label = self.win.getProperty("plexbmc.%s.title" % i).decode("utf-8")
-                        media_type = self.win.getProperty("plexbmc.%s.type" % i).decode("utf-8")
+                        label = self.bgupdater.win.getProperty("plexbmc.%s.title" % i).decode("utf-8")
+                        media_type = self.bgupdater.win.getProperty("plexbmc.%s.type" % i).decode("utf-8")
                         if media_type == "movie":
                             media_type = "movies"
                         if secondary_menus:
-                            item_path = self.win.getProperty("plexbmc.%s.all" % i).decode("utf-8")
+                            item_path = self.bgupdater.win.getProperty("plexbmc.%s.all" % i).decode("utf-8")
                         else:
-                            item_path = self.win.getProperty("plexbmc.%s.path" % i).decode("utf-8")
+                            item_path = self.bgupdater.win.getProperty("plexbmc.%s.path" % i).decode("utf-8")
                         item_path = item_path.replace("VideoLibrary", "Videos")  # fix for krypton ?
                         alllink = item_path
                         alllink = alllink.replace("mode=1", "mode=0")
@@ -126,7 +125,7 @@ class SmartShortCuts():
                             if media_type == "show":
                                 media_type = "episodes"
                             if secondary_menus:
-                                item_path = self.win.getProperty(key).decode("utf-8")
+                                item_path = self.bgupdater.win.getProperty(key).decode("utf-8")
                             else:
                                 item_path = alllink.replace("/all", "/recentlyAdded")
                         elif content_string == ".ondeck":
@@ -134,7 +133,7 @@ class SmartShortCuts():
                             if media_type == "show":
                                 media_type = "episodes"
                             if secondary_menus:
-                                item_path = self.win.getProperty(key).decode("utf-8")
+                                item_path = self.bgupdater.win.getProperty(key).decode("utf-8")
                             else:
                                 item_path = alllink.replace("/all", "/onDeck")
                         elif content_string == ".unwatched":
@@ -159,20 +158,20 @@ class SmartShortCuts():
                         nodes.append(("%s.image" % key, content, label))
 
                         # set smart shortcuts window props
-                        self.win.setProperty("%s.label" % key, label)
-                        self.win.setProperty("%s.title" % key, label)
-                        self.win.setProperty("%s.action" % key, item_path)
-                        self.win.setProperty("%s.path" % key, item_path)
-                        self.win.setProperty("%s.content" % key, content)
-                        self.win.setProperty("%s.type" % key, media_type)
+                        self.bgupdater.set_winprop("%s.label" % key, label)
+                        self.bgupdater.set_winprop("%s.title" % key, label)
+                        self.bgupdater.set_winprop("%s.action" % key, item_path)
+                        self.bgupdater.set_winprop("%s.path" % key, item_path)
+                        self.bgupdater.set_winprop("%s.content" % key, content)
+                        self.bgupdater.set_winprop("%s.type" % key, media_type)
 
                 # add plex channels as entry
                 # extract path from one of the nodes as a workaround because main plex
                 # addon channels listing is in error
                 if nodes:
-                    item_path = self.win.getProperty("plexbmc.0.path").decode("utf-8")
+                    item_path = self.bgupdater.win.getProperty("plexbmc.0.path").decode("utf-8")
                     if not item_path:
-                        item_path = self.win.getProperty("plexbmc.0.all").decode("utf-8")
+                        item_path = self.bgupdater.win.getProperty("plexbmc.0.all").decode("utf-8")
                     item_path = item_path.split("/library/")[0]
                     item_path = item_path + "/channels/all&mode=21"
                     item_path = item_path + ", return)"
@@ -180,12 +179,12 @@ class SmartShortCuts():
                     label = "Channels"
                     content = get_content_path(item_path)
                     nodes.append(("%s.image" % key, content, label))
-                    self.win.setProperty("%s.label" % key, label)
-                    self.win.setProperty("%s.title" % key, label)
-                    self.win.setProperty("%s.action" % key, item_path)
-                    self.win.setProperty("%s.path" % key, item_path)
-                    self.win.setProperty("%s.content" % key, content)
-                    self.win.setProperty("%s.type" % key, "episodes")
+                    self.bgupdater.set_winprop("%s.label" % key, label)
+                    self.bgupdater.set_winprop("%s.title" % key, label)
+                    self.bgupdater.set_winprop("%s.action" % key, item_path)
+                    self.bgupdater.set_winprop("%s.path" % key, item_path)
+                    self.bgupdater.set_winprop("%s.content" % key, content)
+                    self.bgupdater.set_winprop("%s.type" % key, "episodes")
                     if key not in self.toplevel_nodes:
                         self.toplevel_nodes.append(key)
                 self.all_nodes["plex"] = nodes
@@ -218,12 +217,12 @@ class SmartShortCuts():
                                         label = line.text
                                 key = "playlist.%s" % count
                                 item_path = "ActivateWindow(%s,%s,return)" % (playlistpath[1], playlist)
-                                self.win.setProperty("%s.label" % key, label)
-                                self.win.setProperty("%s.title" % key, label)
-                                self.win.setProperty("%s.action" % key, item_path)
-                                self.win.setProperty("%s.path" % key, item_path)
-                                self.win.setProperty("%s.content" % key, playlist)
-                                self.win.setProperty("%s.type" % key, media_type)
+                                self.bgupdater.set_winprop("%s.label" % key, label)
+                                self.bgupdater.set_winprop("%s.title" % key, label)
+                                self.bgupdater.set_winprop("%s.action" % key, item_path)
+                                self.bgupdater.set_winprop("%s.path" % key, item_path)
+                                self.bgupdater.set_winprop("%s.content" % key, playlist)
+                                self.bgupdater.set_winprop("%s.type" % key, media_type)
                                 nodes.append(("%s.image" % key, playlist, label))
                                 if key not in self.toplevel_nodes:
                                     self.toplevel_nodes.append(key)
@@ -253,12 +252,12 @@ class SmartShortCuts():
                         media_type = detect_plugin_content(content)
                         if media_type:
                             key = "favorite.%s" % count
-                            self.win.setProperty("%s.label" % key, fav["label"])
-                            self.win.setProperty("%s.title" % key, fav["label"])
-                            self.win.setProperty("%s.action" % key, item_path)
-                            self.win.setProperty("%s.path" % key, item_path)
-                            self.win.setProperty("%s.content" % key, content)
-                            self.win.setProperty("%s.type" % key, media_type)
+                            self.bgupdater.set_winprop("%s.label" % key, fav["label"])
+                            self.bgupdater.set_winprop("%s.title" % key, fav["label"])
+                            self.bgupdater.set_winprop("%s.action" % key, item_path)
+                            self.bgupdater.set_winprop("%s.path" % key, item_path)
+                            self.bgupdater.set_winprop("%s.content" % key, content)
+                            self.bgupdater.set_winprop("%s.type" % key, media_type)
                             if key not in self.toplevel_nodes:
                                 self.toplevel_nodes.append(key)
                             nodes.append(("%s.image" % key, content, fav["label"]))
@@ -483,16 +482,16 @@ class SmartShortCuts():
                     newnodes = []
                     for node in nodes:
                         key = node[0]
-                        self.win.setProperty(key + ".title", node[1])
-                        self.win.setProperty(key + ".label", node[1])
-                        self.win.setProperty(key + ".content", node[2])
-                        self.win.setProperty(key + ".path", node[4])
-                        self.win.setProperty(key + ".action", node[4])
-                        self.win.setProperty(key + ".type", node[3])
+                        self.bgupdater.set_winprop(key + ".title", node[1])
+                        self.bgupdater.set_winprop(key + ".label", node[1])
+                        self.bgupdater.set_winprop(key + ".content", node[2])
+                        self.bgupdater.set_winprop(key + ".path", node[4])
+                        self.bgupdater.set_winprop(key + ".action", node[4])
+                        self.bgupdater.set_winprop(key + ".type", node[3])
                         if len(node) < 6:
                             newnodes.append("%s.image" % key, node[2], node[1])
                         else:
-                            self.win.setProperty(key + ".image", node[5])
+                            self.bgupdater.set_winprop(key + ".image", node[5])
                     self.all_nodes["netflix"] = newnodes
                 else:
                     log_msg("SKIP Generating netflix entries - addon is not ready!")
