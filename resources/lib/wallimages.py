@@ -8,20 +8,40 @@
     Default is 60 seconds.
 '''
 
-from utils import log_msg
+from utils import log_msg, log_exception
 from artutils import process_method_on_list
 import xbmc
 import xbmcvfs
 import random
-try:
-    from PIL import Image
-except ImportError:
-    import Image
 import io
 
 WALLS_PATH = "special://profile/addon_data/script.skin.helper.backgrounds/wall_backgrounds/"
 
+def supports_pil():
+    ''' Imports the PIL modules and returns False if not supported'''
 
+    # prefer Pillow
+    try:
+        from PIL import Image
+        img = Image.new("RGB", (1, 1))
+        del img
+        return True
+    except Exception as exc:
+        log_exception(__name__, exc)
+        
+    # fallback to traditional PIL
+    try:
+        import Image
+        img = Image.new("RGB", (1, 1))
+        del img
+        return True
+    except Exception as exc:
+        log_exception(__name__, exc)
+    
+    # Log error in log and return False if none of the PIL modules worked
+    log_msg("Wall backgrounds disabled - PIL is not supported on this device!", xbmc.LOGWARNING)
+    return False
+        
 class WallImages():
     '''Generate wall images from collection of images'''
     exit = False
@@ -30,19 +50,10 @@ class WallImages():
     all_wall_images = {}
     manual_walls = {}
     all_backgrounds_keys = {}
-    has_pil = True
 
     def __init__(self, win, get_images_from_vfspath):
         self.win = win
         self.get_images_from_vfspath = get_images_from_vfspath
-
-        # PIL fails on FTV devices ?
-        try:
-            img = Image.new("RGB", (1, 1))
-            del img
-        except Exception:
-            self.has_pil = False
-            log_msg("Wall backgrounds disabled - PIL is not supported on this device!", xbmc.LOGWARNING)
 
     def update_wallbackgrounds(self):
         '''generates wall images from collection of images from the library'''
@@ -116,7 +127,7 @@ class WallImages():
             return wall_images
 
         # build wall images if we do not already have (enough) wall images prebuilt on the filesystem
-        if self.has_pil and len(wall_images) < self.max_wallimages:
+        if supports_pil() and len(wall_images) < self.max_wallimages:
             wall_images = self.build_wallimages(win_prop, images, art_type)
 
         self.build_busy[win_prop] = False
