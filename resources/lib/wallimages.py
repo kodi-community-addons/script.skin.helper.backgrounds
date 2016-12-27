@@ -9,7 +9,7 @@
 '''
 
 from utils import log_msg, log_exception
-from artutils import process_method_on_list
+from artutils import get_clean_image, process_method_on_list
 import xbmc
 import xbmcvfs
 import random
@@ -17,31 +17,26 @@ import io
 
 WALLS_PATH = "special://profile/addon_data/script.skin.helper.backgrounds/wall_backgrounds/"
 
-def supports_pil():
-    ''' Imports the PIL modules and returns False if not supported'''
+# IMPORT PIL/PILLOW ###################################
 
+try:
     # prefer Pillow
+    from PIL import Image
+    img = Image.new("RGB", (1, 1))
+    del img
+    SUPPORTS_PIL = True
+except Exception as exc:
+    log_exception(__name__, exc)
     try:
-        from PIL import Image
-        img = Image.new("RGB", (1, 1))
-        del img
-        return True
-    except Exception as exc:
-        log_exception(__name__, exc)
-        
-    # fallback to traditional PIL
-    try:
+        # fallback to traditional PIL
         import Image
         img = Image.new("RGB", (1, 1))
         del img
-        return True
+        SUPPORTS_PIL = True
     except Exception as exc:
         log_exception(__name__, exc)
-    
-    # Log error in log and return False if none of the PIL modules worked
-    log_msg("Wall backgrounds disabled - PIL is not supported on this device!", xbmc.LOGWARNING)
-    return False
-        
+
+
 class WallImages():
     '''Generate wall images from collection of images'''
     exit = False
@@ -49,29 +44,27 @@ class WallImages():
     max_wallimages = 20
     all_wall_images = {}
     manual_walls = {}
-    all_backgrounds_keys = {}
 
-    def __init__(self, win, get_images_from_vfspath):
-        self.win = win
-        self.get_images_from_vfspath = get_images_from_vfspath
+    def __init__(self, bgupdater):
+        self.bgupdater = bgupdater
 
     def update_wallbackgrounds(self):
         '''generates wall images from collection of images from the library'''
         if self.max_wallimages:
             walls = []
-            walls.append(("SkinHelper.AllMoviesBackground.Wall", "SkinHelper.AllMoviesBackground", "fanart"))
-            walls.append(("SkinHelper.AllMoviesBackground.Poster.Wall", "SkinHelper.AllMoviesBackground", "poster"))
-            walls.append(("SkinHelper.AllMusicBackground.Wall", "SkinHelper.AllMusicBackground", "fanart"))
-            walls.append(("SkinHelper.AllMusicSongsBackground.Wall", "SkinHelper.AllMusicSongsBackground", "thumbnail"))
-            walls.append(("SkinHelper.AllTvShowsBackground.Wall", "SkinHelper.AllTvShowsBackground", "fanart"))
-            walls.append(("SkinHelper.AllTvShowsBackground.Poster.Wall", "SkinHelper.AllTvShowsBackground", "poster"))
+            walls.append(("SkinHelper.AllMoviesBackground.Wall", "videodb://movies/titles/", "fanart"))
+            walls.append(("SkinHelper.AllMoviesBackground.Poster.Wall", "videodb://movies/titles/", "poster"))
+            walls.append(("SkinHelper.AllMusicBackground.Wall", "musicdb://artists/", "fanart"))
+            walls.append(("SkinHelper.AllMusicSongsBackground.Wall", "musicdb://songs/", "thumb"))
+            walls.append(("SkinHelper.AllTvShowsBackground.Wall", "videodb://tvshows/titles/", "fanart"))
+            walls.append(("SkinHelper.AllTvShowsBackground.Poster.Wall", "videodb://tvshows/titles/", "poster"))
             # get the wall images...
             process_method_on_list(self.update_wall_background, walls)
 
     def update_wall_background(self, wall_tuple):
         '''update a single wall background'''
 
-        win_prop = wall_tuple[1]
+        wall_library_path = wall_tuple[1]
         wall_win_prop = wall_tuple[0]
         wall_win_prop_bw = wall_win_prop + ".BW"
         wall_type = wall_tuple[2]
@@ -79,9 +72,9 @@ class WallImages():
         if wall_win_prop in self.all_wall_images and xbmcvfs.exists(WALLS_PATH):
             # the wall images are already cached in memory
             wall_images = self.all_wall_images[wall_win_prop]
-        elif win_prop in self.all_backgrounds_keys:
+        else:
             # no wall images in cache, we must retrieve them
-            images = self.get_images_from_vfspath(self.all_backgrounds_keys[win_prop], 1000)
+            images = self.get_images_from_vfspath(wall_library_path, wall_type)
             if images:
                 wall_images = self.get_wallimages(wall_win_prop, images, wall_type)
                 self.all_wall_images[wall_win_prop] = wall_images
@@ -89,8 +82,8 @@ class WallImages():
             # we have some wall images, select a random one and set as window prop
             wall_image = random.choice(wall_images)
             if wall_image:
-                self.win.setProperty(wall_win_prop, wall_image["wall"])
-                self.win.setProperty(wall_win_prop_bw, wall_image["wallbw"])
+                self.bgupdater.win.setProperty(wall_win_prop, wall_image["wall"])
+                self.bgupdater.win.setProperty(wall_win_prop_bw, wall_image["wallbw"])
 
     def get_wallimages(self, win_prop, images, art_type="fanart"):
         '''gets or builds all wall images for the collection'''
@@ -103,42 +96,57 @@ class WallImages():
         else:
             self.build_busy[win_prop] = True
 
+        # if there is a big change in number of items we force a rebuild
+        lastcount = 0
+        curcount = len(images)
+        force_rebuild = False
+        last_count_setting = self.bgupdater.addon.getSetting(win_prop)
+        if last_count_setting:
+            lastcount = int(last_count_setting)
+        if (lastcount + 10) < curcount:
+            force_rebuild = True
+            self.bgupdater.addon.setSetting(win_prop, str(curcount))
+        log_msg("%s --> curcount: %s - lastcount: %s" % (win_prop, curcount, lastcount))
+
         # check if our path exists
         if not xbmcvfs.exists(WALLS_PATH):
             xbmcvfs.mkdirs(WALLS_PATH)
             xbmcvfs.mkdir(WALLS_PATH)
 
-        # reuse the existing images - do not rebuild all the time
-        files = xbmcvfs.listdir(WALLS_PATH)[1]
-        for file in files:
-            # return color and bw image combined - only if both are found
-            color_path = WALLS_PATH + file.replace("_BW", "")
-            black_path = WALLS_PATH + file
-            if file.startswith("%s_BW." % win_prop) and xbmcvfs.exists(color_path):
-                wall_images.append(
-                    {
-                        "wallbw": black_path,
-                        "wall": color_path
-                    })
+        # reuse the existing images - only rebuild if really needed
+        if not force_rebuild:
+            files = xbmcvfs.listdir(WALLS_PATH)[1]
+            for file in files:
+                # return color and bw image combined - only if both are found
+                color_path = WALLS_PATH + file.replace("_BW", "")
+                black_path = WALLS_PATH + file
+                if file.startswith("%s_BW." % win_prop) and xbmcvfs.exists(color_path):
+                    wall_images.append(
+                        {
+                            "wallbw": black_path,
+                            "wall": color_path
+                        })
 
         # skip if we do not have enough source images
-        if images < self.max_wallimages * 2:
+        if images < (self.max_wallimages * 2):
             log_msg("Building WALL background skipped - not enough source images")
             return wall_images
 
         # build wall images if we do not already have (enough) wall images prebuilt on the filesystem
-        if supports_pil() and len(wall_images) < self.max_wallimages:
+        if len(wall_images) < self.max_wallimages:
             wall_images = self.build_wallimages(win_prop, images, art_type)
 
         self.build_busy[win_prop] = False
         return wall_images
 
-    def build_wallimages(self, win_prop, images, art_type):
+    def build_wallimages(self, win_prop, wall_images, art_type):
         '''build wall images with PIL module for the collection'''
-        wall_images = []
         return_images = []
+        if not SUPPORTS_PIL:
+            log_msg("Wall backgrounds disabled - PIL is not supported on this device!", xbmc.LOGWARNING)
+            return []
         log_msg("Building Wall background for %s - this might take a while..." % win_prop)
-        if art_type == "thumbnail":
+        if art_type == "thumb":
             # square images
             img_columns = 11
             img_rows = 7
@@ -160,11 +168,6 @@ class WallImages():
 
         # build the wall images
         images_required = img_columns * img_rows
-        for image in images:
-            image = image.get(art_type, "")
-            if xbmcvfs.exists(image):
-                wall_images.append(image)
-
         if wall_images:
             # duplicate images if we don't have enough
 
@@ -215,28 +218,44 @@ class WallImages():
 
     def set_manualwall(self, win_prop, limit=20):
         '''set a manual wall by providing the skinner randomly changing images in window props'''
-        images = self.get_images_from_vfspath(self.all_backgrounds_keys[win_prop], 1000)
+        images = self.get_images_from_vfspath(self.bgupdater.all_backgrounds_keys[win_prop])
         if images:
-            if self.win.getProperty("%s.Wall.0" % win_prop):
+            if self.bgupdater.win.getProperty("%s.Wall.0" % win_prop):
                 # 1st run was already done so only refresh one random image in the collection...
                 image = random.choice(images)
                 for key, value in image.iteritems():
                     random_int = random.randint(0, limit)
                     if key == "fanart":
-                        self.win.setProperty("%s.Wall.%s" % (win_prop, random_int), value)
+                        self.bgupdater.win.setProperty("%s.Wall.%s" % (win_prop, random_int), value)
                     else:
-                        self.win.setProperty("%s.Wall.%s.%s" % (win_prop, random_int, key), value)
+                        self.bgupdater.win.setProperty("%s.Wall.%s.%s" % (win_prop, random_int, key), value)
             else:
                 # first run: set all images
                 for i in range(limit):
                     image = random.choice(images)
                     for key, value in image.iteritems():
                         if key == "fanart":
-                            self.win.setProperty("%s.Wall.%s" % (win_prop, i), value)
+                            self.bgupdater.win.setProperty("%s.Wall.%s" % (win_prop, i), value)
                         else:
-                            self.win.setProperty("%s.Wall.%s.%s" % (win_prop, i, key), value)
+                            self.bgupdater.win.setProperty("%s.Wall.%s.%s" % (win_prop, i, key), value)
 
     def update_manualwalls(self):
         '''manual wall images, provides a collection of images which are randomly changing'''
         for key, value in self.manual_walls.iteritems():
             self.set_manualwall(key, value)
+
+    def get_images_from_vfspath(self, lib_path, arttype):
+        '''get all (unique and existing) images from the given vfs path to build the image wall'''
+        result = []
+        for media in self.bgupdater.kodidb.files(lib_path, sort={"method": "random", "order": "descending"}):
+            image = None
+            if media.get('art', {}).get(arttype):
+                image = media['art'][arttype]
+            elif media.get('art', {}).get('tvshow.%s' % arttype):
+                image = media['art']['tvshow.%s' % arttype]
+            elif arttype == "thumb" and media.get("thumbnail"):
+                image = media["thumbnail"]
+            image = get_clean_image(image)
+            if image and image not in result and xbmcvfs.exists(image):
+                result.append(image)
+        return result

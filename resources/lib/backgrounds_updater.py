@@ -37,10 +37,11 @@ class BackgroundsUpdater():
         self.cache = SimpleCache()
         self.kodidb = KodiDb()
         self.win = xbmcgui.Window(10000)
+        self.addon = xbmcaddon.Addon(ADDON_ID)
         self.kodimonitor = xbmc.Monitor()
         self.all_backgrounds_labels = []
         self.smartshortcuts = SmartShortCuts(self)
-        self.wallimages = WallImages(self.win, self.get_images_from_vfspath)
+        self.wallimages = WallImages(self)
         self.winprops = {}
 
     def stop(self):
@@ -54,6 +55,7 @@ class BackgroundsUpdater():
         del self.wallimages
         del self.win
         del self.kodimonitor
+        del self.addon
 
     def run(self):
         '''called to start our background service '''
@@ -91,7 +93,6 @@ class BackgroundsUpdater():
                 # Update wall images every interval (if enabled by skinner)
                 if self.walls_delay and walls_task_interval >= self.walls_delay:
                     walls_task_interval = 0
-                    self.wallimages.all_backgrounds_keys = self.all_backgrounds_keys
                     thread.start_new_thread(self.wallimages.update_wallbackgrounds, ())
                     self.wallimages.update_manualwalls()
 
@@ -109,21 +110,19 @@ class BackgroundsUpdater():
         # set all backgrounds in global cache for quick startup
         self.winpropcache(True)
 
-        addon = xbmcaddon.Addon(ADDON_ID)
         # skinner (or user) enables the random fanart images by setting the randomfanartdelay skin string
         try:
             self.backgrounds_delay = int(xbmc.getInfoLabel("Skin.String(SkinHelper.RandomFanartDelay)"))
         except Exception:
             pass
 
-        self.walls_delay = int(addon.getSetting("wallimages_delay"))
-        self.wallimages.max_wallimages = int(addon.getSetting("max_wallimages"))
-        self.pvr_bg_recordingsonly = addon.getSetting("pvr_bg_recordingsonly") == "true"
-        if addon.getSetting("enable_custom_images_path") == "true":
-            self.custom_picturespath = addon.getSetting("custom_images_path")
+        self.walls_delay = int(self.addon.getSetting("wallimages_delay"))
+        self.wallimages.max_wallimages = int(self.addon.getSetting("max_wallimages"))
+        self.pvr_bg_recordingsonly = self.addon.getSetting("pvr_bg_recordingsonly") == "true"
+        if self.addon.getSetting("enable_custom_images_path") == "true":
+            self.custom_picturespath = self.addon.getSetting("custom_images_path")
         else:
             self.custom_picturespath = ""
-        del addon
 
         try:
             # skinner can enable manual wall images generation so check for these settings
@@ -152,7 +151,7 @@ class BackgroundsUpdater():
                     self.win.setProperty(key.encode("utf-8"), value.encode("utf-8"))
 
     @use_cache(0.5)
-    def get_images_from_vfspath(self, lib_path, limit=50):
+    def get_images_from_vfspath(self, lib_path):
         '''get all images from the given vfs path'''
         result = []
         # safety check: check if no library windows are active to prevent any addons setting the view
@@ -164,7 +163,7 @@ class BackgroundsUpdater():
             lib_path = lib_path + "&filter=random"
 
         for media in self.kodidb.files(lib_path, sort={"method": "random", "order": "descending"},
-                                       limits=(0, limit)):
+                                       limits=(0, 50)):
             image = {}
 
             if media['label'].lower() == "next page":
