@@ -148,7 +148,8 @@ class BackgroundsUpdater():
             cache = self.cache.get("skinhelper.backgrounds")
             if cache:
                 for key, value in cache.iteritems():
-                    self.win.setProperty(key.encode("utf-8"), value.encode("utf-8"))
+                    if value:
+                        self.win.setProperty(key.encode("utf-8"), value.encode("utf-8"))
 
     @use_cache(0.5)
     def get_images_from_vfspath(self, lib_path):
