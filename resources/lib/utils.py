@@ -12,7 +12,7 @@ from traceback import format_exc
 ADDON_ID = "script.skin.helper.backgrounds"
 
 
-def log_msg(msg, loglevel=xbmc.LOGNOTICE):
+def log_msg(msg, loglevel=xbmc.LOGDEBUG):
     '''log to kodi logfile'''
     if isinstance(msg, unicode):
         msg = msg.encode('utf-8')

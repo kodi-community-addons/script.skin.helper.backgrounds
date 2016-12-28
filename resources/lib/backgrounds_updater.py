@@ -138,7 +138,9 @@ class BackgroundsUpdater():
     def set_winprop(self, key, value):
         '''sets a window property and writes it to our global list'''
         self.winprops[key] = value
-        self.win.setProperty(key.encode("utf-8"), value.encode("utf-8"))
+        if isinstance(value, unicode):
+            value = value.encode("utf-8")
+        self.win.setProperty(key, value)
 
     def winpropcache(self, setcache=False):
         '''sets/gets all our window props in a global cache to load them immediately at startup'''
@@ -149,7 +151,9 @@ class BackgroundsUpdater():
             if cache:
                 for key, value in cache.iteritems():
                     if value:
-                        self.win.setProperty(key.encode("utf-8"), value.encode("utf-8"))
+                        if isinstance(value, unicode):
+                            value = value.encode("utf-8")
+                        self.win.setProperty(key.encode("utf-8"), value)
 
     @use_cache(0.5)
     def get_images_from_vfspath(self, lib_path):
