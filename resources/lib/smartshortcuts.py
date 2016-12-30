@@ -15,7 +15,6 @@ from utils import get_content_path, log_msg, log_exception, ADDON_ID
 from artutils import detect_plugin_content, KodiDb
 import xbmc
 import xbmcvfs
-import thread
 
 
 class SmartShortCuts():

@@ -22,16 +22,16 @@ WALLS_PATH = "special://profile/addon_data/script.skin.helper.backgrounds/wall_b
 try:
     # prefer Pillow
     from PIL import Image
-    img = Image.new("RGB", (1, 1))
-    del img
+    TMP = Image.new("RGB", (1, 1))
+    del TMP
     SUPPORTS_PIL = True
 except Exception as exc:
     log_exception(__name__, exc)
     try:
         # fallback to traditional PIL
         import Image
-        img = Image.new("RGB", (1, 1))
-        del img
+        TMP = Image.new("RGB", (1, 1))
+        del TMP
         SUPPORTS_PIL = True
     except Exception as exc:
         log_exception(__name__, exc)
@@ -218,7 +218,7 @@ class WallImages():
 
     def set_manualwall(self, win_prop, limit=20):
         '''set a manual wall by providing the skinner randomly changing images in window props'''
-        images = self.get_images_from_vfspath(self.bgupdater.all_backgrounds_keys[win_prop])
+        images = self.bgupdater.get_images_from_vfspath(self.bgupdater.all_backgrounds_keys[win_prop])
         if images:
             if self.bgupdater.win.getProperty("%s.Wall.0" % win_prop):
                 # 1st run was already done so only refresh one random image in the collection...
