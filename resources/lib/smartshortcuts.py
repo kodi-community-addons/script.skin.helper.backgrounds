@@ -15,6 +15,7 @@ from utils import get_content_path, log_msg, log_exception, ADDON_ID
 from artutils import detect_plugin_content, KodiDb
 import xbmc
 import xbmcvfs
+import xbmcaddon
 
 
 class SmartShortCuts():
@@ -197,12 +198,13 @@ class SmartShortCuts():
         nodes = []
         if xbmc.getCondVisibility("Skin.HasSetting(SmartShortcuts.playlists)"):
             # build node listing
+            count = 0
             import xml.etree.ElementTree as xmltree
             paths = [('special://videoplaylists/', 'Videos'), ('special://musicplaylists/', 'Music')]
             for playlistpath in paths:
                 if xbmcvfs.exists(playlistpath[0]):
                     media_array = KodiDb().files(playlistpath[0])
-                    for count, item in enumerate(media_array):
+                    for item in media_array:
                         try:
                             label = ""
                             if item["file"].endswith(".xsp") and "Emby" not in item["file"]:
@@ -229,6 +231,7 @@ class SmartShortCuts():
                                 nodes.append(("%s.image" % key, playlist, label))
                                 if key not in self.toplevel_nodes:
                                     self.toplevel_nodes.append(key)
+                                count += 1
                         except Exception:
                             log_msg("Error while processing smart shortcuts for playlist %s  --> "
                                     "This file seems to be corrupted, please remove it from your system "
@@ -303,24 +306,17 @@ class SmartShortCuts():
 
                     # get mylist items...
                     mylist = []
-                    media_array = kodi_json(
-                        'Files.GetDirectory',
-                        {
-                            "properties": ["title"],
-                            "directory": "plugin://plugin.video.flix2kodi/?mode=list_videos"
-                            "&thumb&media_type=both&url=list%3f%26mylist&widget=true",
-                            "media": "files",
-                            "limits": {
-                                "end": 50}})
+                    media_array = self.bgupdater.kodidb.files(
+                        "plugin://plugin.video.flix2kodi/?mode=list_videos"
+                        "&thumb&media_type=both&url=list%3f%26mylist&widget=true", limits=(0, 50))
+
                     for item in media_array:
                         mylist.append(item["label"])
 
                     # get dynamic entries...
-                    media_array = kodi_json(
-                        'Files.GetDirectory',
-                        {"properties": ["title"],
-                         "directory": "plugin://plugin.video.flix2kodi/?mode=main&media_type=dynamic&widget=true",
-                         "media": "files", "limits": {"end": 50}})
+                    media_array = self.bgupdater.kodidb.files(
+                        "plugin://plugin.video.flix2kodi/"
+                        "?mode=main&media_type=dynamic&widget=true", limits=(0, 50))
                     if not media_array:
                         # if no result the plugin is in error, exit processing
                         return []
@@ -470,13 +466,10 @@ class SmartShortCuts():
                     item_path = "ActivateWindow(Videos,%s,return)" % content
                     media_type = "genres"
                     nodes.append((key, label, content, media_type, item_path))
-
-                    if "netflix.generic" not in self.smartShortcuts["allSmartShortcuts"]:
-                        self.smartShortcuts["allSmartShortcuts"].append("netflix.generic")
-                    if "netflix.generic.movies" not in self.smartShortcuts["allSmartShortcuts"]:
-                        self.smartShortcuts["allSmartShortcuts"].append("netflix.movies")
-                    if "netflix.generic.tvshows" not in self.smartShortcuts["allSmartShortcuts"]:
-                        self.smartShortcuts["allSmartShortcuts"].append("netflix.tvshows")
+                    
+                    for key in ["netflix.generic", "netflix.movies", "netflix.tvshows"]:
+                        if key not in self.toplevel_nodes:
+                            self.toplevel_nodes.append(key)
 
                     log_msg("DONE Generating netflix entries --> %s" % repr(nodes))
                     del f2k_addon
@@ -492,7 +485,7 @@ class SmartShortCuts():
                         self.bgupdater.set_winprop(key + ".action", node[4])
                         self.bgupdater.set_winprop(key + ".type", node[3])
                         if len(node) < 6:
-                            newnodes.append("%s.image" % key, node[2], node[1])
+                            newnodes.append(("%s.image" % key, node[2], node[1]))
                         else:
                             self.bgupdater.set_winprop(key + ".image", node[5])
                     self.all_nodes["netflix"] = newnodes
