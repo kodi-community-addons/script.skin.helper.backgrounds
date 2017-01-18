@@ -18,6 +18,7 @@ import io
 WALLS_PATH = "special://profile/addon_data/script.skin.helper.backgrounds/wall_backgrounds/"
 
 # IMPORT PIL/PILLOW ###################################
+SUPPORTS_PIL = False
 
 try:
     # prefer Pillow
@@ -50,7 +51,7 @@ class WallImages():
 
     def update_wallbackgrounds(self):
         '''generates wall images from collection of images from the library'''
-        if self.max_wallimages:
+        if self.max_wallimages and SUPPORTS_PIL:
             walls = []
             walls.append(("SkinHelper.AllMoviesBackground.Wall", "videodb://movies/titles/", "fanart"))
             walls.append(("SkinHelper.AllMoviesBackground.Poster.Wall", "videodb://movies/titles/", "poster"))
@@ -59,7 +60,8 @@ class WallImages():
             walls.append(("SkinHelper.AllTvShowsBackground.Wall", "videodb://tvshows/titles/", "fanart"))
             walls.append(("SkinHelper.AllTvShowsBackground.Poster.Wall", "videodb://tvshows/titles/", "poster"))
             # get the wall images...
-            process_method_on_list(self.update_wall_background, walls)
+            for wall in walls:
+                self.update_wall_background(wall)
 
     def update_wall_background(self, wall_tuple):
         '''update a single wall background'''
