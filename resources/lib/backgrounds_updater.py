@@ -120,7 +120,7 @@ class BackgroundsUpdater():
         self.walls_delay = int(self.addon.getSetting("wallimages_delay"))
         self.wallimages.max_wallimages = int(self.addon.getSetting("max_wallimages"))
         self.pvr_bg_recordingsonly = self.addon.getSetting("pvr_bg_recordingsonly") == "true"
-        enable_walls = xbmc.getCondVisibility("Skin.String(SkinHelper.EnableWallBackgrounds)")
+        self.enable_walls = xbmc.getCondVisibility("Skin.HasSetting(SkinHelper.EnableWallBackgrounds)")
         if self.addon.getSetting("enable_custom_images_path") == "true":
             self.custom_picturespath = self.addon.getSetting("custom_images_path")
         else:
@@ -171,7 +171,6 @@ class BackgroundsUpdater():
         for media in self.kodidb.files(lib_path, sort={"method": "random", "order": "descending"},
                                        limits=(0, 50)):
             image = {}
-
             if media['label'].lower() == "next page":
                 continue
             if media.get('art'):
@@ -179,6 +178,8 @@ class BackgroundsUpdater():
                     image["fanart"] = get_clean_image(media['art']['fanart'])
                 elif media['art'].get('tvshow.fanart'):
                     image["fanart"] = get_clean_image(media['art']['tvshow.fanart'])
+                elif media['art'].get('artist.fanart'):
+                    image["fanart"] = get_clean_image(media['art']['artist.fanart'])
                 if media['art'].get('thumb'):
                     image["thumbnail"] = get_clean_image(media['art']['thumb'])
             if not image.get('fanart') and media.get("fanart"):
@@ -339,16 +340,13 @@ class BackgroundsUpdater():
         if xbmc.getCondVisibility("Library.HasContent(music)"):
             # music artists
             self.set_background("SkinHelper.AllMusicBackground", "musicdb://artists/", label=32019)
-            # random songs
-            self.set_background("SkinHelper.AllMusicSongsBackground", "musicdb://songs/", label=32022)
             # recent albums
             self.set_background(
-                "SkinHelper.RecentMusicBackground", "videodb://musicdb/albums/?xsp=%s" %
-                urlencode(
-                    '{"limit":50,"order":{"direction":"decending","method":"dateadded"},'
-                    ',"type":"albums"}'),
-                label=32023)
-
+                "SkinHelper.RecentMusicBackground", "musicdb://recentlyaddedalbums/", label=32023)
+            # random songs
+            self.set_background(
+                "SkinHelper.AllMusicSongsBackground", "musicdb://songs/", label=32022)
+                
         # tmdb backgrounds (extendedinfo)
         if xbmc.getCondVisibility("System.HasAddon(script.extendedinfo)"):
             self.set_background(
