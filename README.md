@@ -53,7 +53,11 @@ ________________________________________________________________________________
 The service provides pre-built image walls for certain collections. Ready to use in your skin.
 The walls are pregenerated once (at first launch) and stored within the addon_data folder.
 
-NOTE: In the addon settings users can configure the rotation speed/interval or even disable the entire service.
+Important NOTE: Generation of wall backgrounds is resource heavy and disabled by default. 
+You must enable it in your skin by setting this skin bool: SkinHelper.EnableWallBackgrounds
+
+
+NOTE 2: In the addon settings users can configure the rotation speed/interval or even disable the entire service.
 Default is 60 seconds.
 
 
@@ -289,97 +293,7 @@ Note that the Emby addon must be present on the system for this to function.
 | emby.nodes.X.inprogressepisodes.image | Rotating Fanart of the in progress episodes node for the Emby collection|
 
 
-
-________________________________________________________________________________________________________
-
-
-
-##### Smart shortcuts for Netflix addon (plugin.video.flix2kodi)
-Will only be available if this Skin Bool is true --> SmartShortcuts.netflix
-
-Note that the Flix2Kodi addon must be present on the system for this to function.
-
-| property 			| description |
-| :----------------------------	| :----------- |
-| netflix.generic.title | Title of the main Netflix entry|
-| netflix.generic.path | Path of the main Netflix entry|
-| netflix.generic.content | Contentpath of the main Netflix entry (for widgets)|
-| netflix.generic.image | Rotating Fanart from Netflix addon|
-| |
-| netflix.generic.mylist.title | Title of the Netflix My List entry|
-| netflix.generic.mylist.path | Path of the Netflix My List entry|
-| netflix.generic.mylist.content | Contentpath of the Netflix My List entry (for widgets)|
-| netflix.generic.mylist.image | Rotating Fanart from Netflix My List entry|
-| |
-| netflix.generic.suggestions.title | Title of the Netflix Suggestions entry|
-| netflix.generic.suggestions.path | Path of the Netflix Suggestions entry|
-| netflix.generic.suggestions.content | Contentpath of the Netflix Suggestions entry (for widgets)|
-| netflix.generic.suggestions.image | Rotating Fanart from Netflix Suggestions entry|
-| |
-| netflix.generic.inprogress.title | Title of the Netflix Continue Watching entry|
-| netflix.generic.inprogress.path | Path of the Netflix Continue Watching entry|
-| netflix.generic.inprogress.content | Contentpath of the Netflix Continue Watching entry (for widgets)|
-| netflix.generic.inprogress.image | Rotating Fanart from Netflix Continue Watching entry|
-| |
-| netflix.generic.recent.title | Title of the Netflix Latest entry|
-| netflix.generic.recent.path | Path of the Netflix Latest entry|
-| netflix.generic.recent.content | Contentpath of the Netflix Latest entry (for widgets)|
-| netflix.generic.recent.image | Rotating Fanart from Netflix Latest entry|
-| |
-| netflix.movies.title | Title of the Netflix Movies entry|
-| netflix.movies.path | Path of the Netflix Movies entry|
-| netflix.movies.content | Contentpath of the Netflix Movies entry (for widgets)|
-| netflix.movies.image | Rotating Fanart from Netflix Movies entry|
-| |
-| netflix.movies.mylist.title | Title of the Netflix Movies Mylist entry|
-| netflix.movies.mylist.path | Path of the Netflix Movies Mylist entry|
-| netflix.movies.mylist.content | Contentpath of the Netflix Movies Mylist entry (for widgets)|
-| netflix.movies.mylist.image | Rotating Fanart from Netflix Movies Mylist entry|
-| |
-| netflix.movies.suggestions.title | Title of the Netflix Movies suggestions entry|
-| netflix.movies.suggestions.path | Path of the Netflix Movies suggestions entry|
-| netflix.movies.suggestions.content | Contentpath of the Netflix Movies suggestions entry (for widgets)|
-| netflix.movies.suggestions.image | Rotating Fanart from Netflix Movies suggestions entry|
-| |
-| netflix.movies.genres.title | Title of the Netflix Movies genres entry|
-| netflix.movies.genres.path | Path of the Netflix Movies genres entry|
-| netflix.movies.genres.content | Contentpath of the Netflix Movies genres entry (for widgets)|
-| netflix.movies.genres.image | Rotating Fanart from Netflix Movies genres entry|
-| |
-| netflix.movies.recent.title | Title of the Netflix Latest movies entry|
-| netflix.movies.recent.path | Path of the Netflix Latest movies entry|
-| netflix.movies.recent.content | Contentpath of the Netflix Latest movies entry (for widgets)|
-| netflix.movies.recent.image | Rotating Fanart from Netflix Latest movies entry|
-| |
-| netflix.tvshows.title | Title of the Netflix tvshows entry|
-| netflix.tvshows.path | Path of the Netflix tvshows entry|
-| netflix.tvshows.content | Contentpath of the Netflix tvshows entry (for widgets)|
-| netflix.tvshows.image | Rotating Fanart from Netflix tvshows entry|
-| |
-| netflix.tvshows.mylist.title | Title of the Netflix tvshows Mylist entry|
-| netflix.tvshows.mylist.path | Path of the Netflix tvshows Mylist entry|
-| netflix.tvshows.mylist.content | Contentpath of the Netflix tvshows Mylist entry (for widgets)|
-| netflix.tvshows.mylist.image | Rotating Fanart from Netflix tvshows Mylist entry|
-| |
-| netflix.tvshows.suggestions.title | Title of the Netflix tvshows suggestions entry|
-| netflix.tvshows.suggestions.path | Path of the Netflix tvshows suggestions entry|
-| netflix.tvshows.suggestions.content | Contentpath of the Netflix tvshows suggestions entry (for widgets)|
-| netflix.tvshows.suggestions.image | Rotating Fanart from Netflix tvshows suggestions entry|
-| |
-| netflix.tvshows.genres.title | Title of the Netflix tvshows genres entry|
-| netflix.tvshows.genres.path | Path of the Netflix tvshows genres entry|
-| netflix.tvshows.genres.content | Contentpath of the Netflix tvshows genres entry (for widgets)|
-| netflix.tvshows.genres.image | Rotating Fanart from Netflix tvshows genres entry|
-| |
-| netflix.tvshows.recent.title | Title of the Netflix Latest tvshows entry|
-| netflix.tvshows.recent.path | Path of the Netflix Latest tvshows entry|
-| netflix.tvshows.recent.content | Contentpath of the Netflix Latest tvshows entry (for widgets)|
-| netflix.tvshows.recent.image | Rotating Fanart from Netflix Latest tvshows entry|
-| |
-
-
-
-________________________________________________________________________________________________________
+______________________________________________________________________________________________________
 ________________________________________________________________________________________________________
 
 ### Use with skin shortcuts script

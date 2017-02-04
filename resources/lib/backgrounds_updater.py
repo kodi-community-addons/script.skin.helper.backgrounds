@@ -28,6 +28,7 @@ class BackgroundsUpdater():
     all_backgrounds = {}
     backgrounds_delay = 0
     walls_delay = 30
+    enable_walls = False
     all_backgrounds_keys = {}
 
     pvr_bg_recordingsonly = False
@@ -91,7 +92,7 @@ class BackgroundsUpdater():
                     self.update_backgrounds()
 
                 # Update wall images every interval (if enabled by skinner)
-                if self.walls_delay and walls_task_interval >= self.walls_delay:
+                if self.enable_walls and self.walls_delay and (walls_task_interval >= self.walls_delay):
                     walls_task_interval = 0
                     thread.start_new_thread(self.wallimages.update_wallbackgrounds, ())
                     self.wallimages.update_manualwalls()
@@ -119,11 +120,11 @@ class BackgroundsUpdater():
         self.walls_delay = int(self.addon.getSetting("wallimages_delay"))
         self.wallimages.max_wallimages = int(self.addon.getSetting("max_wallimages"))
         self.pvr_bg_recordingsonly = self.addon.getSetting("pvr_bg_recordingsonly") == "true"
+        enable_walls = xbmc.getCondVisibility("Skin.String(SkinHelper.EnableWallBackgrounds)")
         if self.addon.getSetting("enable_custom_images_path") == "true":
             self.custom_picturespath = self.addon.getSetting("custom_images_path")
         else:
             self.custom_picturespath = ""
-
         try:
             # skinner can enable manual wall images generation so check for these settings
             # store in memory so wo do not have to query the skin settings too often
@@ -339,14 +340,13 @@ class BackgroundsUpdater():
             # music artists
             self.set_background("SkinHelper.AllMusicBackground", "musicdb://artists/", label=32019)
             # random songs
-            self.set_background(
-                "SkinHelper.AllMusicSongsBackground",
-                "plugin://script.skin.helper.widgets/?mediatype=songs&action=random&limit=50",
-                label=32022)
+            self.set_background("SkinHelper.AllMusicSongsBackground", "musicdb://songs/", label=32022)
             # recent albums
             self.set_background(
-                "SkinHelper.RecentMusicBackground",
-                "plugin://script.skin.helper.widgets/?mediatype=albums&action=recent&limit=50",
+                "SkinHelper.RecentMusicBackground", "videodb://musicdb/albums/?xsp=%s" %
+                urlencode(
+                    '{"limit":50,"order":{"direction":"decending","method":"dateadded"},'
+                    ',"type":"albums"}'),
                 label=32023)
 
         # tmdb backgrounds (extendedinfo)
