@@ -30,6 +30,7 @@ class BackgroundsUpdater():
     walls_delay = 30
     enable_walls = False
     all_backgrounds_keys = {}
+    max_images = 50
 
     pvr_bg_recordingsonly = False
     custom_picturespath = ""
@@ -119,6 +120,7 @@ class BackgroundsUpdater():
 
         self.walls_delay = int(self.addon.getSetting("wallimages_delay"))
         self.wallimages.max_wallimages = int(self.addon.getSetting("max_wallimages"))
+        self.max_images = int(self.addon.getSetting("max_images"))
         self.pvr_bg_recordingsonly = self.addon.getSetting("pvr_bg_recordingsonly") == "true"
         self.enable_walls = xbmc.getCondVisibility("Skin.HasSetting(SkinHelper.EnableWallBackgrounds)")
         if self.addon.getSetting("enable_custom_images_path") == "true":
@@ -169,7 +171,7 @@ class BackgroundsUpdater():
             lib_path = lib_path + "&filter=random"
 
         for media in self.kodidb.files(lib_path, sort={"method": "random", "order": "descending"},
-                                       limits=(0, 50)):
+                                       limits=(0, max_images)):
             image = {}
             if media['label'].lower() == "next page":
                 continue
@@ -197,7 +199,7 @@ class BackgroundsUpdater():
                 image["poster"] = get_clean_image(media.get('art', {}).get('poster', ''))
                 image["clearlogo"] = get_clean_image(media.get('art', {}).get('clearlogo', ''))
                 result.append(image)
-        return result
+        return random.shuffle(result)
 
     def get_pictures(self):
         '''get images we can use as pictures background'''
