@@ -171,7 +171,7 @@ class BackgroundsUpdater():
             lib_path = lib_path + "&filter=random"
 
         for media in self.kodidb.files(lib_path, sort={"method": "random", "order": "descending"},
-                                       limits=(0, max_images)):
+                                       limits=(0, self.max_images)):
             image = {}
             if media['label'].lower() == "next page":
                 continue
