@@ -30,6 +30,7 @@ class BackgroundsUpdater():
     walls_delay = 30
     enable_walls = False
     all_backgrounds_keys = {}
+    last_image_index = {}
     max_images = 50
 
     pvr_bg_recordingsonly = False
@@ -199,7 +200,8 @@ class BackgroundsUpdater():
                 image["poster"] = get_clean_image(media.get('art', {}).get('poster', ''))
                 image["clearlogo"] = get_clean_image(media.get('art', {}).get('clearlogo', ''))
                 result.append(image)
-        return random.shuffle(result)
+        random.shuffle(result)
+        return result
 
     def get_pictures(self):
         '''get images we can use as pictures background'''
@@ -259,6 +261,7 @@ class BackgroundsUpdater():
                 imgs = self.get_images_from_vfspath(self.all_backgrounds_keys[key])
                 if imgs:
                     images += imgs
+        random.shuffle(images)
         return images
 
     def set_background(self, win_prop, lib_path, images=None, fallback_image="", label=None):
@@ -268,7 +271,13 @@ class BackgroundsUpdater():
             if win_prop not in self.all_backgrounds_keys:
                 self.all_backgrounds_keys[win_prop] = lib_path
         if images:
-            image = random.choice(images)
+            # pick next image from our shuffled list
+            next_index = 0
+            if win_prop in self.last_image_index:
+                if (self.last_image_index[win_prop] + 1) <= len(images):
+                    next_index = self.last_image_index[win_prop] + 1
+            self.last_image_index[win_prop] = next_index
+            image = images[next_index]
             for key, value in image.iteritems():
                 if key == "fanart":
                     self.set_winprop(win_prop, value)
@@ -348,7 +357,7 @@ class BackgroundsUpdater():
             # random songs
             self.set_background(
                 "SkinHelper.AllMusicSongsBackground", "musicdb://songs/", label=32022)
-                
+
         # tmdb backgrounds (extendedinfo)
         if xbmc.getCondVisibility("System.HasAddon(script.extendedinfo)"):
             self.set_background(
