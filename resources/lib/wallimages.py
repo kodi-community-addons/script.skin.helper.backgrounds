@@ -61,7 +61,8 @@ class WallImages():
             walls.append(("SkinHelper.AllTvShowsBackground.Poster.Wall", "videodb://tvshows/titles/", "poster"))
             # get the wall images...
             for wall in walls:
-                self.update_wall_background(wall)
+                if not self.exit:
+                    self.update_wall_background(wall)
 
     def update_wall_background(self, wall_tuple):
         '''update a single wall background'''
@@ -94,6 +95,8 @@ class WallImages():
         if self.build_busy.get(win_prop, False):
             # there is already a build in progress for this wall, skip...
             log_msg("Build WALL %s skipped - another build in progress" % win_prop)
+            return wall_images
+        elif self.exit:
             return wall_images
         else:
             self.build_busy[win_prop] = True
