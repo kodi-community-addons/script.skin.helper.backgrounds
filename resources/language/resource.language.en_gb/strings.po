@@ -207,7 +207,3 @@ msgstr ""
 msgctxt "#32078"
 msgid "Delete"
 msgstr ""
-
-msgctxt "#32079"
-msgid "Max. items to grab from each library to create random backgrounds"
-msgstr ""

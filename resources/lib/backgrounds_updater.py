@@ -26,12 +26,12 @@ class BackgroundsUpdater():
     '''Background service providing rotating backgrounds to Kodi skins'''
     exit = False
     all_backgrounds = {}
+    all_backgrounds2 = {}
     backgrounds_delay = 0
     walls_delay = 30
     enable_walls = False
     all_backgrounds_keys = {}
-    last_image_index = {}
-    max_images = 50
+    prefetch_images = 30  # number of images to cache in memory for each library path
     pvr_bg_recordingsonly = False
     custom_picturespath = ""
 
@@ -49,7 +49,6 @@ class BackgroundsUpdater():
     def stop(self):
         '''stop running our background service '''
         log_msg("BackgroundsUpdater - stop called", xbmc.LOGNOTICE)
-        self.winpropcache(True)
         self.smartshortcuts.exit = True
         self.wallimages.exit = True
         self.exit = True
@@ -65,8 +64,8 @@ class BackgroundsUpdater():
         log_msg("BackgroundsUpdater - started", xbmc.LOGNOTICE)
         self.winpropcache()
         self.get_config()
-        backgrounds_task_interval = 25
-        walls_task_interval = 25
+        backgrounds_task_interval = 0
+        walls_task_interval = 0
         delayed_task_interval = 112
 
         while not self.kodimonitor.abortRequested():
@@ -83,6 +82,7 @@ class BackgroundsUpdater():
                     self.get_config()
                     self.report_allbackgrounds()
                     self.smartshortcuts.build_smartshortcuts()
+                    self.winpropcache(True)
 
                 # force refresh smart shortcuts on request
                 if self.win.getProperty("refreshsmartshortcuts"):
@@ -122,7 +122,6 @@ class BackgroundsUpdater():
 
         self.walls_delay = int(self.addon.getSetting("wallimages_delay"))
         self.wallimages.max_wallimages = int(self.addon.getSetting("max_wallimages"))
-        self.max_images = int(self.addon.getSetting("max_images"))
         self.pvr_bg_recordingsonly = self.addon.getSetting("pvr_bg_recordingsonly") == "true"
         self.enable_walls = xbmc.getCondVisibility("Skin.HasSetting(SkinHelper.EnableWallBackgrounds)")
         if self.addon.getSetting("enable_custom_images_path") == "true":
@@ -152,7 +151,7 @@ class BackgroundsUpdater():
         self.win.setProperty(key, value)
 
     def winpropcache(self, setcache=False):
-        '''sets/gets all our window props in a global cache to load them immediately at startup'''
+        '''sets/gets the current window props in a global cache to load them immediately at startup'''
         if setcache:
             self.cache.set("skinhelper.backgrounds", self.winprops)
         else:
@@ -169,16 +168,18 @@ class BackgroundsUpdater():
         result = []
         # safety check: check if no library windows are active to prevent any addons setting the view
         if (xbmc.getCondVisibility("Window.IsMedia") and "plugin" in lib_path) or self.exit:
-            return None  # return None so the cache is ignored
-
+            return result
+            
         lib_path = get_content_path(lib_path)
+
         if "plugin.video.emby" in lib_path and "browsecontent" in lib_path and "filter" not in lib_path:
             lib_path = lib_path + "&filter=random"
 
         items = self.kodidb.get_json("Files.GetDirectory", returntype="", optparam=("directory", lib_path),
                                      fields=["title", "art", "thumbnail", "fanart"],
                                      sort={"method": "random", "order": "descending"},
-                                     limits=(0, self.max_images))
+                                     limits=(0, self.prefetch_images))
+
         for media in items:
             image = {}
             if media['label'].lower() == "next page":
@@ -253,7 +254,11 @@ class BackgroundsUpdater():
     def set_background(self, win_prop, lib_path, fallback_image="", label=None):
         '''set the window property for the background image'''
         image = None
-        if win_prop in self.all_backgrounds and len(self.all_backgrounds[win_prop]) > 0:
+        if win_prop in self.all_backgrounds2:
+            # pick one random image from the small list using normal random function
+            if len(self.all_backgrounds2[win_prop]) > 0:
+                image = random.choice(self.all_backgrounds2[win_prop])
+        elif win_prop in self.all_backgrounds and len(self.all_backgrounds[win_prop]) > 0:
             # list is already in memory and still contains images, grab the next item in line
             image = self.all_backgrounds[win_prop][0]
             # delete image from list when we've used it so we have truly randomized images
@@ -268,12 +273,24 @@ class BackgroundsUpdater():
                 images = self.get_pvr_backgrounds()
             else:
                 images = self.get_images_from_vfspath(lib_path)
-            if images:
+            # store images in memory
+            if len(images) < self.prefetch_images:
+                # this path did not return enough images so we store it in a different list
+                # which will not be flushed
+                self.all_backgrounds2[win_prop] = images
+                if images:
+                    image = random.choice(images)
+            else:
+                # normal approach: store the current set of images in a list
+                # images are taken from that list one-by-one untill it's empty
+                # once empty a fresh pair of images will be retrieved for the path
+                # this way we have fully randomized images while there's no need
+                # to store a big pile of data in memory
                 image = images[0]
                 del images[0]
-                # store list in memory
                 self.all_backgrounds[win_prop] = images
-                # also store the key + label in a list for skinshortcuts
+            # also store the key + label in a list for skinshortcuts - only if the path actually has images
+            if image:
                 if not any(win_prop in item for item in self.all_backgrounds_labels):
                     if label and isinstance(label, int):
                         label = xbmc.getInfoLabel("$ADDON[%s %s]" % (ADDON_ID, label))

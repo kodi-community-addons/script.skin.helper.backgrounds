@@ -252,14 +252,24 @@ class WallImages():
     def get_images_from_vfspath(self, lib_path, arttype):
         '''get all (unique and existing) images from the given vfs path to build the image wall'''
         result = []
-        for media in self.bgupdater.kodidb.files(lib_path, sort={"method": "random", "order": "descending"}):
+        items = self.bgupdater.kodidb.get_json(
+            "Files.GetDirectory", returntype="", optparam=(
+                "directory", lib_path), fields=[
+                "art", "thumbnail", "fanart"], sort={
+                "method": "random", "order": "descending"})
+
+        for media in items:
             image = None
             if media.get('art', {}).get(arttype):
                 image = media['art'][arttype]
             elif media.get('art', {}).get('tvshow.%s' % arttype):
                 image = media['art']['tvshow.%s' % arttype]
+            elif media.get('art', {}).get('artist.%s' % arttype):
+                image = media['art']['artist.%s' % arttype]
             elif arttype == "thumb" and media.get("thumbnail"):
                 image = media["thumbnail"]
+            elif arttype == "fanart" and media.get("fanart"):
+                image = media["fanart"]
             image = get_clean_image(image)
             if image and image not in result and xbmcvfs.exists(image):
                 result.append(image)
