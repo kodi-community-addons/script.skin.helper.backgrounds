@@ -169,7 +169,7 @@ class BackgroundsUpdater():
         # safety check: check if no library windows are active to prevent any addons setting the view
         if (xbmc.getCondVisibility("Window.IsMedia") and "plugin" in lib_path) or self.exit:
             return result
-            
+
         lib_path = get_content_path(lib_path)
 
         if "plugin.video.emby" in lib_path and "browsecontent" in lib_path and "filter" not in lib_path:
