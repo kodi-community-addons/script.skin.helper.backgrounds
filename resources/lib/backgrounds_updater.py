@@ -27,6 +27,7 @@ class BackgroundsUpdater():
     exit = False
     all_backgrounds = {}
     all_backgrounds2 = {}
+    all_backgrounds_labels = []
     backgrounds_delay = 0
     walls_delay = 30
     enable_walls = False
@@ -34,6 +35,7 @@ class BackgroundsUpdater():
     prefetch_images = 30  # number of images to cache in memory for each library path
     pvr_bg_recordingsonly = False
     custom_picturespath = ""
+    winprops = {}
 
     def __init__(self):
         self.cache = SimpleCache()
@@ -41,10 +43,8 @@ class BackgroundsUpdater():
         self.win = xbmcgui.Window(10000)
         self.addon = xbmcaddon.Addon(ADDON_ID)
         self.kodimonitor = xbmc.Monitor()
-        self.all_backgrounds_labels = []
         self.smartshortcuts = SmartShortCuts(self)
         self.wallimages = WallImages(self)
-        self.winprops = {}
 
     def stop(self):
         '''stop running our background service '''
@@ -141,7 +141,8 @@ class BackgroundsUpdater():
 
     def report_allbackgrounds(self):
         '''sets a list of all known backgrounds as winprop to be retrieved from skinshortcuts'''
-        self.set_winprop("SkinHelper.AllBackgrounds", repr(self.all_backgrounds_labels))
+        if self.all_backgrounds_labels:
+            self.set_winprop("SkinHelper.AllBackgrounds", repr(self.all_backgrounds_labels))
 
     def set_winprop(self, key, value):
         '''sets a window property and writes it to our global list'''
