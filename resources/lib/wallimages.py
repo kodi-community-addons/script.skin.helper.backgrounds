@@ -9,7 +9,7 @@
 '''
 
 from utils import log_msg, log_exception
-from artutils import get_clean_image, process_method_on_list
+from metadatautils import get_clean_image, process_method_on_list
 import xbmc
 import xbmcvfs
 import random

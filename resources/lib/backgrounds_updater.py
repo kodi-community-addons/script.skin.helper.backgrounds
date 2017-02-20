@@ -19,7 +19,7 @@ from simplecache import SimpleCache
 from conditional_backgrounds import get_cond_background
 from smartshortcuts import SmartShortCuts
 from wallimages import WallImages
-from artutils import KodiDb, get_clean_image
+from metadatautils import KodiDb, get_clean_image
 
 
 class BackgroundsUpdater():
