@@ -179,8 +179,7 @@ class BackgroundsUpdater():
         items = self.kodidb.get_json("Files.GetDirectory", returntype="", optparam=("directory", lib_path),
                                      fields=["title", "art", "thumbnail", "fanart"],
                                      sort={"method": "random", "order": "descending"},
-                                     limits=(0, self.prefetch_images))
-
+                                     limits=(0, self.prefetch_images*2))
         for media in items:
             image = {}
             if media['label'].lower() == "next page":
@@ -209,6 +208,8 @@ class BackgroundsUpdater():
                 image["poster"] = get_clean_image(media.get('art', {}).get('poster', ''))
                 image["clearlogo"] = get_clean_image(media.get('art', {}).get('clearlogo', ''))
                 result.append(image)
+            if len(result) == self.prefetch_images:
+                break
         random.shuffle(result)
         return result
 
