@@ -162,7 +162,10 @@ class BackgroundsUpdater():
                     if value:
                         if isinstance(value, unicode):
                             value = value.encode("utf-8")
-                        self.win.setProperty(key.encode("utf-8"), value)
+                        if isinstance(key, unicode):
+                            key = key.encode("utf-8")
+                        self.win.setProperty(key, value)
+                        log_msg("setting BG from cache: %s --> %s" %(key, value),xbmc.LOGNOTICE)
 
     def get_images_from_vfspath(self, lib_path):
         '''get all images from the given vfs path'''
