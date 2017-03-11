@@ -153,10 +153,11 @@ class BackgroundsUpdater():
 
     def winpropcache(self, setcache=False):
         '''sets/gets the current window props in a global cache to load them immediately at startup'''
+        cachestr = "skinhelper.backgrounds.%s" % xbmc.getInfoLabel("System.ProfileName")
         if setcache:
-            self.cache.set("skinhelper.backgrounds", self.winprops)
+            self.cache.set(cachestr, self.winprops)
         else:
-            cache = self.cache.get("skinhelper.backgrounds")
+            cache = self.cache.get(cachestr)
             if cache:
                 for key, value in cache.iteritems():
                     if value:
@@ -165,7 +166,6 @@ class BackgroundsUpdater():
                         if isinstance(key, unicode):
                             key = key.encode("utf-8")
                         self.win.setProperty(key, value)
-                        log_msg("setting BG from cache: %s --> %s" %(key, value),xbmc.LOGNOTICE)
 
     def get_images_from_vfspath(self, lib_path):
         '''get all images from the given vfs path'''
