@@ -194,6 +194,7 @@ class WallImages():
                             img = img.resize(size)
                             img_canvas.paste(img, (y * img_width, x * img_height))
                             del img
+                            del img_obj
                         except Exception:
                             log_msg("Invalid image file found! --> %s" % wall_images[img_count], xbmc.LOGWARNING)
                         finally:
@@ -256,7 +257,7 @@ class WallImages():
             "Files.GetDirectory", returntype="", optparam=(
                 "directory", lib_path), fields=[
                 "art", "thumbnail", "fanart"], sort={
-                "method": "random", "order": "descending"})
+                "method": "random", "order": "descending"}, limits=(0,1000))
 
         for media in items:
             image = None
