@@ -259,7 +259,10 @@ class BackgroundsUpdater():
     def set_background(self, win_prop, lib_path, fallback_image="", label=None):
         '''set the window property for the background image'''
         image = None
-        if win_prop in self.all_backgrounds2:
+        if isinstance(lib_path, list):
+            # global background
+            image = self.get_global_background(lib_path)
+        elif win_prop in self.all_backgrounds2:
             # pick one random image from the small list using normal random function
             if len(self.all_backgrounds2[win_prop]) > 0:
                 image = random.choice(self.all_backgrounds2[win_prop])
@@ -270,16 +273,14 @@ class BackgroundsUpdater():
             del self.all_backgrounds[win_prop][0]
         else:
             # no images in memory - load them from vfs
-            if isinstance(lib_path, list):
-                images = self.get_global_backgrounds(lib_path)
-            elif lib_path == "pictures":
+            if lib_path == "pictures":
                 images = self.get_pictures()
             elif lib_path == "pvr":
                 images = self.get_pvr_backgrounds()
             else:
                 images = self.get_images_from_vfspath(lib_path)
             # store images in memory
-            if len(images) < self.prefetch_images:
+            if (len(images) < self.prefetch_images):
                 # this path did not return enough images so we store it in a different list
                 # which will not be flushed
                 self.all_backgrounds2[win_prop] = images
@@ -313,14 +314,15 @@ class BackgroundsUpdater():
             # no image - use fallback_image
             self.set_winprop(win_prop, fallback_image)
 
-    def get_global_backgrounds(self, keys):
-        '''get random backgrounds from multiple other collections'''
-        images = []
-        for key in keys:
-            if key in self.all_backgrounds and self.all_backgrounds[key]:
-                images += self.all_backgrounds[key]
-        random.shuffle(images)
-        return images
+    def get_global_background(self, keys):
+        '''get random background from random other collection'''
+        image = None
+        # pick random category-key
+        key = random.choice(keys)
+        if key in self.all_backgrounds and self.all_backgrounds[key]:
+            # pick random image from this category
+            image = random.choice(self.all_backgrounds[key])
+        return image
 
     def get_pvr_backgrounds(self):
         '''get the images for pvr items by using the skinhelper widgets as source'''
