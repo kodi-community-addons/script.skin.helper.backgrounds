@@ -7,6 +7,7 @@
 '''
 
 import thread
+import threading
 import random
 import os
 from datetime import timedelta
@@ -22,9 +23,10 @@ from wallimages import WallImages
 from metadatautils import KodiDb, get_clean_image
 
 
-class BackgroundsUpdater():
+class BackgroundsUpdater(threading.Thread):
     '''Background service providing rotating backgrounds to Kodi skins'''
     exit = False
+    event = None
     all_backgrounds = {}
     all_backgrounds2 = {}
     all_backgrounds_labels = []
@@ -37,26 +39,29 @@ class BackgroundsUpdater():
     custom_picturespath = ""
     winprops = {}
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.cache = SimpleCache()
         self.kodidb = KodiDb()
         self.win = xbmcgui.Window(10000)
         self.addon = xbmcaddon.Addon(ADDON_ID)
-        self.kodimonitor = xbmc.Monitor()
         self.smartshortcuts = SmartShortCuts(self)
         self.wallimages = WallImages(self)
+        self.kodimonitor = kwargs.get("kodimonitor")
+        self.event = threading.Event()
+        threading.Thread.__init__(self, *args)
+        self.setDaemon(True)
 
     def stop(self):
         '''stop running our background service '''
-        log_msg("BackgroundsUpdater - stop called", xbmc.LOGNOTICE)
         self.smartshortcuts.exit = True
         self.wallimages.exit = True
         self.exit = True
-        xbmc.sleep(100)  # allow threads to process the stop request
+        self.event.set()
+        self.event.clear()
+        self.join(0.5)
         del self.smartshortcuts
         del self.wallimages
         del self.win
-        del self.kodimonitor
         del self.addon
 
     def run(self):
@@ -68,7 +73,7 @@ class BackgroundsUpdater():
         walls_task_interval = 0
         delayed_task_interval = 112
 
-        while not self.kodimonitor.abortRequested():
+        while not self.exit:
 
             # Process backgrounds only if we're not watching fullscreen video
             if xbmc.getCondVisibility(
@@ -83,6 +88,9 @@ class BackgroundsUpdater():
                     self.report_allbackgrounds()
                     self.smartshortcuts.build_smartshortcuts()
                     self.winpropcache(True)
+                    
+                if self.exit:
+                    break
 
                 # force refresh smart shortcuts on request
                 if self.win.getProperty("refreshsmartshortcuts"):
@@ -93,6 +101,9 @@ class BackgroundsUpdater():
                 if self.backgrounds_delay and backgrounds_task_interval >= self.backgrounds_delay:
                     backgrounds_task_interval = 0
                     self.update_backgrounds()
+                    
+                if self.exit:
+                    break
 
                 # Update wall images every interval (if enabled by skinner)
                 if self.enable_walls and self.walls_delay and (walls_task_interval >= self.walls_delay):
@@ -104,9 +115,6 @@ class BackgroundsUpdater():
             backgrounds_task_interval += 1
             walls_task_interval += 1
             delayed_task_interval += 1
-
-        # abort requested
-        self.stop()
 
     def get_config(self):
         '''gets various settings for the script as set by the skinner or user'''
@@ -258,6 +266,8 @@ class BackgroundsUpdater():
 
     def set_background(self, win_prop, lib_path, fallback_image="", label=None):
         '''set the window property for the background image'''
+        if self.exit:
+            return
         image = None
         if isinstance(lib_path, list):
             # global background
