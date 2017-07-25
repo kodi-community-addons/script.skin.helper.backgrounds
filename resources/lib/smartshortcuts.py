@@ -12,7 +12,6 @@ so you can have content based backgrounds.
 '''
 
 from utils import get_content_path, log_msg, log_exception, ADDON_ID
-from metadatautils import detect_plugin_content, KodiDb
 import xbmc
 import xbmcvfs
 import xbmcaddon
@@ -202,7 +201,7 @@ class SmartShortCuts():
             paths = [('special://videoplaylists/', 'Videos'), ('special://musicplaylists/', 'Music')]
             for playlistpath in paths:
                 if xbmcvfs.exists(playlistpath[0]):
-                    media_array = KodiDb().files(playlistpath[0])
+                    media_array = self.bgupdater.mutils.kodidb.files(playlistpath[0])
                     for item in media_array:
                         try:
                             label = ""
@@ -242,7 +241,7 @@ class SmartShortCuts():
         if xbmc.getCondVisibility("Skin.HasSetting(SmartShortcuts.favorites)"):
             # build node listing
             nodes = []
-            favs = KodiDb().favourites()
+            favs = self.bgupdater.mutils.kodidb.favourites()
             for count, fav in enumerate(favs):
                 if fav["type"] == "window":
                     content = fav["windowparameter"]
@@ -254,7 +253,7 @@ class SmartShortCuts():
                         item_path = "ActivateWindow(%s,%s,return)" % (fav["window"], content)
                         if "&" in content and "?" in content and "=" in content and not content.endswith("/"):
                             content += "&widget=true"
-                        media_type = detect_plugin_content(content)
+                        media_type = self.bgupdater.mutils.detect_plugin_content(content)
                         if media_type:
                             key = "favorite.%s" % count
                             self.bgupdater.set_winprop("%s.label" % key, fav["label"])

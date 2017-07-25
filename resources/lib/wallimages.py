@@ -9,7 +9,6 @@
 '''
 
 from utils import log_msg, log_exception
-from metadatautils import get_clean_image, process_method_on_list
 import xbmc
 import xbmcvfs
 import random
@@ -271,7 +270,7 @@ class WallImages():
                 image = media["thumbnail"]
             elif arttype == "fanart" and media.get("fanart"):
                 image = media["fanart"]
-            image = get_clean_image(image)
+            image = self.bgupdater.mutils.get_clean_image(image)
             if image and image not in result and xbmcvfs.exists(image):
                 result.append(image)
         return result

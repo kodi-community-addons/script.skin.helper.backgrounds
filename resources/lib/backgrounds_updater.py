@@ -20,7 +20,7 @@ from simplecache import SimpleCache
 from conditional_backgrounds import get_cond_background
 from smartshortcuts import SmartShortCuts
 from wallimages import WallImages
-from metadatautils import KodiDb, get_clean_image
+from metadatautils import MetadataUtils
 
 
 class BackgroundsUpdater(threading.Thread):
@@ -41,7 +41,7 @@ class BackgroundsUpdater(threading.Thread):
 
     def __init__(self, *args, **kwargs):
         self.cache = SimpleCache()
-        self.kodidb = KodiDb()
+        self.mutils = MetadataUtils()
         self.win = xbmcgui.Window(10000)
         self.addon = xbmcaddon.Addon(ADDON_ID)
         self.smartshortcuts = SmartShortCuts(self)
@@ -188,7 +188,7 @@ class BackgroundsUpdater(threading.Thread):
         if "plugin.video.emby" in lib_path and "browsecontent" in lib_path and "filter" not in lib_path:
             lib_path = lib_path + "&filter=random"
 
-        items = self.kodidb.get_json("Files.GetDirectory", returntype="", optparam=("directory", lib_path),
+        items = self.mutils.kodidb.get_json("Files.GetDirectory", returntype="", optparam=("directory", lib_path),
                                      fields=["title", "art", "thumbnail", "fanart"],
                                      sort={"method": "random", "order": "descending"},
                                      limits=(0, self.prefetch_images*2))
@@ -198,17 +198,17 @@ class BackgroundsUpdater(threading.Thread):
                 continue
             if media.get('art'):
                 if media['art'].get('fanart'):
-                    image["fanart"] = get_clean_image(media['art']['fanart'])
+                    image["fanart"] = self.mutils.get_clean_image(media['art']['fanart'])
                 elif media['art'].get('tvshow.fanart'):
-                    image["fanart"] = get_clean_image(media['art']['tvshow.fanart'])
+                    image["fanart"] = self.mutils.get_clean_image(media['art']['tvshow.fanart'])
                 elif media['art'].get('artist.fanart'):
-                    image["fanart"] = get_clean_image(media['art']['artist.fanart'])
+                    image["fanart"] = self.mutils.get_clean_image(media['art']['artist.fanart'])
                 if media['art'].get('thumb'):
-                    image["thumbnail"] = get_clean_image(media['art']['thumb'])
+                    image["thumbnail"] = self.mutils.get_clean_image(media['art']['thumb'])
             if not image.get('fanart') and media.get("fanart"):
-                image["fanart"] = get_clean_image(media['fanart'])
+                image["fanart"] = self.mutils.get_clean_image(media['fanart'])
             if not image.get("thumbnail") and media.get("thumbnail"):
-                image["thumbnail"] = get_clean_image(media["thumbnail"])
+                image["thumbnail"] = self.mutils.get_clean_image(media["thumbnail"])
 
             # only append items which have a fanart image
             if image.get("fanart"):
@@ -216,9 +216,9 @@ class BackgroundsUpdater(threading.Thread):
                 image["title"] = media.get('title', '')
                 if not image.get("title"):
                     image["title"] = media.get('label', '')
-                image["landscape"] = get_clean_image(media.get('art', {}).get('landscape', ''))
-                image["poster"] = get_clean_image(media.get('art', {}).get('poster', ''))
-                image["clearlogo"] = get_clean_image(media.get('art', {}).get('clearlogo', ''))
+                image["landscape"] = self.mutils.get_clean_image(media.get('art', {}).get('landscape', ''))
+                image["poster"] = self.mutils.get_clean_image(media.get('art', {}).get('poster', ''))
+                image["clearlogo"] = self.mutils.get_clean_image(media.get('art', {}).get('clearlogo', ''))
                 result.append(image)
             if len(result) == self.prefetch_images:
                 break
@@ -240,7 +240,7 @@ class BackgroundsUpdater(threading.Thread):
                     images.append({"fanart": image, "title": file.decode("utf-8")})
         else:
             # load pictures from all picture sources
-            media_array = self.kodidb.get_json('Files.GetSources', optparam=("media", "pictures"))
+            media_array = self.mutils.kodidb.get_json('Files.GetSources', optparam=("media", "pictures"))
             randomdirs = []
             for source in media_array:
                 if 'file' in source:
