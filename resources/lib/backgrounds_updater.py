@@ -49,7 +49,6 @@ class BackgroundsUpdater(threading.Thread):
         self.kodimonitor = kwargs.get("kodimonitor")
         self.event = threading.Event()
         threading.Thread.__init__(self, *args)
-        self.setDaemon(True)
 
     def stop(self):
         '''stop running our background service '''
@@ -154,6 +153,8 @@ class BackgroundsUpdater(threading.Thread):
 
     def set_winprop(self, key, value):
         '''sets a window property and writes it to our global list'''
+        if self.exit:
+            return
         self.winprops[key] = value
         if isinstance(value, unicode):
             value = value.encode("utf-8")
