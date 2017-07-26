@@ -252,7 +252,7 @@ class WallImages():
     def get_images_from_vfspath(self, lib_path, arttype):
         '''get all (unique and existing) images from the given vfs path to build the image wall'''
         result = []
-        items = self.bgupdater.kodidb.get_json(
+        items = self.bgupdater.mutils.kodidb.get_json(
             "Files.GetDirectory", returntype="", optparam=(
                 "directory", lib_path), fields=[
                 "art", "thumbnail", "fanart"], sort={
