@@ -86,6 +86,7 @@ class BackgroundsUpdater(threading.Thread):
                     self.get_config()
                     self.report_allbackgrounds()
                     self.smartshortcuts.build_smartshortcuts()
+                    self.report_allbackgrounds()
                     self.winpropcache(True)
                     
                 if self.exit:
@@ -117,9 +118,6 @@ class BackgroundsUpdater(threading.Thread):
 
     def get_config(self):
         '''gets various settings for the script as set by the skinner or user'''
-
-        # set all backgrounds in global cache for quick startup
-        self.winpropcache(True)
 
         # skinner (or user) enables the random fanart images by setting the randomfanartdelay skin string
         try:
@@ -270,17 +268,14 @@ class BackgroundsUpdater(threading.Thread):
         if self.exit:
             return
         image = None
-        if isinstance(lib_path, list):
-            # global background
-            image = self.get_global_background(lib_path)
-        elif win_prop in self.all_backgrounds2:
+        if win_prop in self.all_backgrounds2:
             # pick one random image from the small list using normal random function
             if len(self.all_backgrounds2[win_prop]) > 0:
                 image = random.choice(self.all_backgrounds2[win_prop])
         elif win_prop in self.all_backgrounds and len(self.all_backgrounds[win_prop]) > 0:
             # list is already in memory and still contains images, grab the next item in line
             image = self.all_backgrounds[win_prop][0]
-            # delete image from list when we've used it so we have truly randomized images
+            # delete image from list when we've used it so we have truly randomized images with minimized possibility of duplicates
             del self.all_backgrounds[win_prop][0]
         else:
             # no images in memory - load them from vfs
@@ -308,32 +303,52 @@ class BackgroundsUpdater(threading.Thread):
                 self.all_backgrounds[win_prop] = images
             # also store the key + label in a list for skinshortcuts - only if the path actually has images
             if image:
-                if not any(win_prop in item for item in self.all_backgrounds_labels):
-                    if label and isinstance(label, int):
-                        label = xbmc.getInfoLabel("$ADDON[%s %s]" % (ADDON_ID, label))
-                    elif not label:
-                        label = win_prop
-                    self.all_backgrounds_labels.append((win_prop, label))
+                self.save_background_label(win_prop, label)
         # set the image
+        self.set_image(win_prop, image, fallback_image)
+
+    def set_global_background(self, win_prop, keys, fallback_image="", label=None):
+        '''get random background from random other collection'''
+        image = None
+        # pick random category-key
+        random.shuffle(keys)
+        for key in keys:
+            if key in self.all_backgrounds2 and self.all_backgrounds2[key]:
+                # pick random image from this category
+                image = random.choice(self.all_backgrounds2[key])
+            elif key in self.all_backgrounds and self.all_backgrounds[key]:
+                # pick random image from this category
+                image = random.choice(self.all_backgrounds[key])
+            if image or self.exit:
+                break
+        # also store the win_prop + label in a list for skinshortcuts - only if the path actually has images
+        if image:
+            self.save_background_label(win_prop, label)
+        # set the image
+        self.set_image(win_prop, image, fallback_image)
+        return image
+
+    
+    def set_image(self, win_prop, image, fallback_image):
+        ''' actually set the image window property'''
         if image:
             for key, value in image.iteritems():  # image is actually a dict
                 if key == "fanart":
                     self.set_winprop(win_prop, value)
                 else:  # set additional image properties
                     self.set_winprop("%s.%s" % (win_prop, key), value)
-        else:
+        elif fallback_image:
             # no image - use fallback_image
             self.set_winprop(win_prop, fallback_image)
 
-    def get_global_background(self, keys):
-        '''get random background from random other collection'''
-        image = None
-        # pick random category-key
-        key = random.choice(keys)
-        if key in self.all_backgrounds and self.all_backgrounds[key]:
-            # pick random image from this category
-            image = random.choice(self.all_backgrounds[key])
-        return image
+    def save_background_label(self, win_prop, label):
+        ''' store background label in list, used for exachnge with other scripts'''
+        if not any(win_prop in item for item in self.all_backgrounds_labels):
+            if label and isinstance(label, int):
+                label = xbmc.getInfoLabel("$ADDON[%s %s]" % (ADDON_ID, label))
+            elif not label:
+                label = win_prop
+            self.all_backgrounds_labels.append((win_prop, label))
 
     def get_pvr_backgrounds(self):
         '''get the images for pvr items by using the skinhelper widgets as source'''
@@ -433,19 +448,19 @@ class BackgroundsUpdater(threading.Thread):
             self.set_background(node[0], node[1], label=node[2])
 
         # global backgrounds
-        self.set_background("SkinHelper.GlobalFanartBackground",
+        self.set_global_background("SkinHelper.GlobalFanartBackground",
                             ["SkinHelper.AllMoviesBackground", "SkinHelper.AllTvShowsBackground",
                              "SkinHelper.AllMusicVideosBackground", "SkinHelper.AllMusicBackground"],
                             label=32009)
-        self.set_background("SkinHelper.AllVideosBackground",
+        self.set_global_background("SkinHelper.AllVideosBackground",
                             ["SkinHelper.AllMoviesBackground", "SkinHelper.AllTvShowsBackground",
                              "SkinHelper.AllMusicVideosBackground"], label=32025)
-        self.set_background(
+        self.set_global_background(
             "SkinHelper.AllVideosBackground2", [
                 "SkinHelper.AllMoviesBackground", "SkinHelper.AllTvShowsBackground"], label=32026)
-        self.set_background(
+        self.set_global_background(
             "SkinHelper.RecentVideosBackground",
             ["SkinHelper.RecentMoviesBackground", "SkinHelper.RecentEpisodesBackground"], label=32027)
-        self.set_background(
+        self.set_global_background(
             "SkinHelper.InProgressVideosBackground",
             ["SkinHelper.InProgressMoviesBackground", "SkinHelper.InProgressShowsBackground"], label=32028)
