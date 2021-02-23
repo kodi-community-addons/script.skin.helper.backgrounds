@@ -6,20 +6,23 @@
     a helper service for Kodi skins providing rotating backgrounds
 '''
 
-import thread
 import threading
 import random
-import os
+import os, sys
+if sys.version_info.major == 3:
+    import _thread as thread
+else:
+    import thread
 from datetime import timedelta
-from utils import log_msg, log_exception, get_content_path, urlencode, ADDON_ID
+from .utils import log_msg, log_exception, get_content_path, urlencode, ADDON_ID
 import xbmc
 import xbmcvfs
 import xbmcaddon
 import xbmcgui
 from simplecache import SimpleCache
-from conditional_backgrounds import get_cond_background
-from smartshortcuts import SmartShortCuts
-from wallimages import WallImages
+from .conditional_backgrounds import get_cond_background
+from .smartshortcuts import SmartShortCuts
+from .wallimages import WallImages
 from metadatautils import MetadataUtils
 
 
@@ -65,7 +68,7 @@ class BackgroundsUpdater(threading.Thread):
 
     def run(self):
         '''called to start our background service '''
-        log_msg("BackgroundsUpdater - started", xbmc.LOGNOTICE)
+        log_msg("BackgroundsUpdater - started", xbmc.LOGINFO)
         self.winpropcache()
         self.get_config()
         backgrounds_task_interval = 0
@@ -137,7 +140,7 @@ class BackgroundsUpdater(threading.Thread):
             # skinner can enable manual wall images generation so check for these settings
             # store in memory so wo do not have to query the skin settings too often
             if self.walls_delay:
-                for key in self.all_backgrounds_keys.iterkeys():
+                for key in self.all_backgrounds_keys:
                     limitrange = xbmc.getInfoLabel("Skin.String(%s.EnableWallImages)" % key)
                     if limitrange:
                         self.wallimages.manual_walls[key] = int(limitrange)
@@ -154,8 +157,6 @@ class BackgroundsUpdater(threading.Thread):
         if self.exit:
             return
         self.winprops[key] = value
-        if isinstance(value, unicode):
-            value = value.encode("utf-8")
         self.win.setProperty(key, value)
 
     def winpropcache(self, setcache=False):
@@ -166,14 +167,17 @@ class BackgroundsUpdater(threading.Thread):
         else:
             cache = self.cache.get(cachestr)
             if cache:
-                for key, value in cache.iteritems():
+                for key, value in cache.items():
                     if value:
-                        if isinstance(value, unicode):
-                            value = value.encode("utf-8")
-                        if isinstance(key, unicode):
-                            key = key.encode("utf-8")
-                        self.win.setProperty(key, value)
-
+                        if sys.version_info.major < 3:
+                            if isinstance(value, unicode):
+                                value = value.encode("utf-8")
+                            if isinstance(key):
+                                key = key
+                            self.win.setProperty(key, value)
+                        else:
+                            self.win.setProperty(key, value)
+                            
     def get_images_from_vfspath(self, lib_path):
         '''get all images from the given vfs path'''
         result = []
@@ -234,8 +238,8 @@ class BackgroundsUpdater(threading.Thread):
             # pick max 20 images from path
             for file in files[:20]:
                 if file.lower().endswith(".jpg") or file.lower().endswith(".png"):
-                    image = os.path.join(self.custom_picturespath, file.decode("utf-8"))
-                    images.append({"fanart": image, "title": file.decode("utf-8")})
+                    image = os.path.join(self.custom_picturespath, file)
+                    images.append({"fanart": image, "title": file})
         else:
             # load pictures from all picture sources
             media_array = self.mutils.kodidb.get_json('Files.GetSources', optparam=("media", "pictures"))
@@ -248,7 +252,7 @@ class BackgroundsUpdater(threading.Thread):
                         if dirs:
                             # pick 10 subdirectories
                             for randomdir in dirs[:10]:
-                                randomdir = os.path.join(source["file"], randomdir.decode("utf-8"))
+                                randomdir = os.path.join(source["file"], randomdir)
                                 randomdirs.append(randomdir)
                         # append root to dirs so we can also list images in the root
                         randomdirs.append(source["file"])
@@ -258,7 +262,7 @@ class BackgroundsUpdater(threading.Thread):
                             random.shuffle(files2)
                             for count, filename in enumerate(files2):
                                 if (filename.endswith(".jpg") or filename.endswith(".png")) and count < 6:
-                                    filename = filename.decode("utf-8")
+                                    filename = filename
                                     image = os.path.join(item, filename)
                                     images.append({"fanart": image, "title": filename})
         return images
@@ -332,7 +336,7 @@ class BackgroundsUpdater(threading.Thread):
     def set_image(self, win_prop, image, fallback_image):
         ''' actually set the image window property'''
         if image:
-            for key, value in image.iteritems():  # image is actually a dict
+            for key, value in image.items():  # image is actually a dict
                 if key == "fanart":
                     self.set_winprop(win_prop, value)
                 else:  # set additional image properties
@@ -362,7 +366,7 @@ class BackgroundsUpdater(threading.Thread):
         if not self.pvr_bg_recordingsonly:
             tv_images = self.get_images_from_vfspath(
                 "plugin://script.skin.helper.widgets/?mediatype=pvr"
-                "&action=channels&limit=25&reload=%s" % widgetreload)
+                "&action=channels&limit=20&reload=%s" % widgetreload)
             if tv_images:  # result can be None
                 images += tv_images
         return images

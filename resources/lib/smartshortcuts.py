@@ -11,11 +11,11 @@ The most important behaviour of the smart shortcuts feature is that is pulls ima
 so you can have content based backgrounds.
 '''
 
-from utils import get_content_path, log_msg, log_exception, ADDON_ID
+from .utils import get_content_path, log_msg, log_exception, ADDON_ID
 import xbmc
 import xbmcvfs
 import xbmcaddon
-
+import os, sys
 
 class SmartShortCuts():
     '''Smart shortcuts listings'''
@@ -30,8 +30,12 @@ class SmartShortCuts():
     def get_smartshortcuts_nodes(self):
         '''return all smartshortcuts paths for which an image should be generated'''
         nodes = []
-        for value in self.all_nodes.itervalues():
-            nodes += value
+        if sys.version_info.major == 3:
+            for value in self.all_nodes.values():
+                nodes += value
+        else:
+            for value in self.all_nodes.itervalues():
+                nodes += value
         return nodes
 
     def build_smartshortcuts(self):
@@ -68,12 +72,12 @@ class SmartShortCuts():
                             key = "emby.nodes.%s%s" % (count, content_string)
                             item_path = self.bgupdater.win.getProperty(
                                 "emby.nodes.%s%s.path" %
-                                (count, content_string)).decode("utf-8")
-                            mainlabel = self.bgupdater.win.getProperty("emby.nodes.%s.title" % (count)).decode("utf-8")
+                                (count, content_string))
+                            mainlabel = self.bgupdater.win.getProperty("emby.nodes.%s.title" % (count))
                             sublabel = self.bgupdater.win.getProperty(
                                 "emby.nodes.%s%s.title" %
-                                (count, content_string)).decode("utf-8")
-                            label = u"%s: %s" % (mainlabel, sublabel)
+                                (count, content_string))
+                            label = "%s: %s" % (mainlabel, sublabel)
                             if not content_string:
                                 label = mainlabel
                             if item_path:
@@ -110,14 +114,14 @@ class SmartShortCuts():
                         break
                     for content_string in content_strings:
                         key = "plexbmc.%s%s" % (i, content_string)
-                        label = self.bgupdater.win.getProperty("plexbmc.%s.title" % i).decode("utf-8")
-                        media_type = self.bgupdater.win.getProperty("plexbmc.%s.type" % i).decode("utf-8")
+                        label = self.bgupdater.win.getProperty("plexbmc.%s.title" % i)
+                        media_type = self.bgupdater.win.getProperty("plexbmc.%s.type" % i)
                         if media_type == "movie":
                             media_type = "movies"
                         if secondary_menus:
-                            item_path = self.bgupdater.win.getProperty("plexbmc.%s.all" % i).decode("utf-8")
+                            item_path = self.bgupdater.win.getProperty("plexbmc.%s.all" % i)
                         else:
-                            item_path = self.bgupdater.win.getProperty("plexbmc.%s.path" % i).decode("utf-8")
+                            item_path = self.bgupdater.win.getProperty("plexbmc.%s.path" % i)
                         item_path = item_path.replace("VideoLibrary", "Videos")  # fix for krypton ?
                         alllink = item_path
                         alllink = alllink.replace("mode=1", "mode=0")
@@ -127,7 +131,7 @@ class SmartShortCuts():
                             if media_type == "show":
                                 media_type = "episodes"
                             if secondary_menus:
-                                item_path = self.bgupdater.win.getProperty(key).decode("utf-8")
+                                item_path = self.bgupdater.win.getProperty(key)
                             else:
                                 item_path = alllink.replace("/all", "/recentlyAdded")
                         elif content_string == ".ondeck":
@@ -135,7 +139,7 @@ class SmartShortCuts():
                             if media_type == "show":
                                 media_type = "episodes"
                             if secondary_menus:
-                                item_path = self.bgupdater.win.getProperty(key).decode("utf-8")
+                                item_path = self.bgupdater.win.getProperty(key)
                             else:
                                 item_path = alllink.replace("/all", "/onDeck")
                         elif content_string == ".unwatched":
@@ -171,9 +175,9 @@ class SmartShortCuts():
                 # extract path from one of the nodes as a workaround because main plex
                 # addon channels listing is in error
                 if nodes:
-                    item_path = self.bgupdater.win.getProperty("plexbmc.0.path").decode("utf-8")
+                    item_path = self.bgupdater.win.getProperty("plexbmc.0.path")
                     if not item_path:
-                        item_path = self.bgupdater.win.getProperty("plexbmc.0.all").decode("utf-8")
+                        item_path = self.bgupdater.win.getProperty("plexbmc.0.all")
                     item_path = item_path.split("/library/")[0]
                     item_path = item_path + "/channels/all&mode=21"
                     item_path = item_path + ", return)"
@@ -233,7 +237,7 @@ class SmartShortCuts():
                         except Exception:
                             log_msg("Error while processing smart shortcuts for playlist %s  --> "
                                     "This file seems to be corrupted, please remove it from your system "
-                                    "to prevent any further errors." % item["file"], xbmc.LOGWARNING)
+                                    "to prevent any further errors." % item["file"], xbmc.LOGINFO)
             self.all_nodes["playlists"] = nodes
 
     def favourites_nodes(self):

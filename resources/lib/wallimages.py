@@ -8,7 +8,7 @@
     Default is 60 seconds.
 '''
 
-from utils import log_msg, log_exception
+from .utils import log_msg, log_exception
 import xbmc
 import xbmcvfs
 import random
@@ -132,7 +132,7 @@ class WallImages():
                         })
 
         # skip if we do not have enough source images
-        if images < (self.max_wallimages * 2):
+        if len(images) < (self.max_wallimages * 2):
             log_msg("Building WALL background skipped - not enough source images")
             return wall_images
 
@@ -147,7 +147,7 @@ class WallImages():
         '''build wall images with PIL module for the collection'''
         return_images = []
         if not SUPPORTS_PIL:
-            log_msg("Wall backgrounds disabled - PIL is not supported on this device!", xbmc.LOGWARNING)
+            log_msg("Wall backgrounds disabled - PIL is not supported on this device!", xbmc.LOGINFO)
             return []
         log_msg("Building Wall background for %s - this might take a while..." % win_prop)
         if art_type == "thumb":
@@ -191,25 +191,27 @@ class WallImages():
                             img_obj = io.BytesIO(bytearray(file.readBytes()))
                             img = Image.open(img_obj)
                             img = img.resize(size)
-                            img_canvas.paste(img, (y * img_width, x * img_height))
+                            img_canvas.paste(img, (15 * img_width, 5 * img_height))
+                            log_msg("Bane1: %s" % img_canvas)
                             del img
                             del img_obj
                         except Exception:
-                            log_msg("Invalid image file found! --> %s" % wall_images[img_count], xbmc.LOGWARNING)
+                            log_msg("Invalid image file found! --> %s" % wall_images[img_count], xbmc.LOGINFO)
                         finally:
                             file.close()
                             img_count += 1
 
                 # save the files..
                 out_file = "%s%s.%s.jpg" % (WALLS_PATH, win_prop, count)
-                out_file = xbmc.translatePath(out_file).decode("utf-8")
+                out_file = xbmcvfs.translatePath(out_file)
                 if xbmcvfs.exists(out_file):
                     xbmcvfs.delete(out_file)
                     xbmc.sleep(500)
+                img_canvas = img_canvas.convert("L")
                 img_canvas.save(out_file, "JPEG")
 
                 out_file_bw = "%s%s_BW.%s.jpg" % (WALLS_PATH, win_prop, count)
-                out_file_bw = xbmc.translatePath(out_file_bw).decode("utf-8")
+                out_file_bw = xbmcvfs.translatePath(out_file_bw)
                 if xbmcvfs.exists(out_file_bw):
                     xbmcvfs.delete(out_file_bw)
                     xbmc.sleep(500)
@@ -228,7 +230,7 @@ class WallImages():
             if self.bgupdater.win.getProperty("%s.Wall.0" % win_prop):
                 # 1st run was already done so only refresh one random image in the collection...
                 image = random.choice(images)
-                for key, value in image.iteritems():
+                for key, value in image.items():
                     random_int = random.randint(0, limit)
                     if key == "fanart":
                         self.bgupdater.win.setProperty("%s.Wall.%s" % (win_prop, random_int), value)
@@ -238,7 +240,7 @@ class WallImages():
                 # first run: set all images
                 for i in range(limit):
                     image = random.choice(images)
-                    for key, value in image.iteritems():
+                    for key, value in image.items():
                         if key == "fanart":
                             self.bgupdater.win.setProperty("%s.Wall.%s" % (win_prop, i), value)
                         else:
@@ -246,7 +248,7 @@ class WallImages():
 
     def update_manualwalls(self):
         '''manual wall images, provides a collection of images which are randomly changing'''
-        for key, value in self.manual_walls.iteritems():
+        for key, value in self.manual_walls.items():
             self.set_manualwall(key, value)
 
     def get_images_from_vfspath(self, lib_path, arttype):

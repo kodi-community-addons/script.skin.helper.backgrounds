@@ -7,32 +7,49 @@ import xbmcgui
 import xbmc
 import sys
 import urllib
+import traceback
 from traceback import format_exc
 
 ADDON_ID = "script.skin.helper.backgrounds"
 
 
-def log_msg(msg, loglevel=xbmc.LOGDEBUG):
-    '''log to kodi logfile'''
-    if isinstance(msg, unicode):
-        msg = msg.encode('utf-8')
+def log_msg(msg, loglevel=xbmc.LOGINFO):
+    """log message to kodi logfile"""
+    if sys.version_info.major < 3:
+        if isinstance(msg, unicode):
+            msg = msg.encode('utf-8')
+    if loglevel == xbmc.LOGDEBUG and FORCE_DEBUG_LOG:
+        loglevel = xbmc.LOGINFO
     xbmc.log("Skin Helper Backgrounds --> %s" % msg, level=loglevel)
 
-
 def log_exception(modulename, exceptiondetails):
-    '''helper to properly log exception details'''
-    log_msg(format_exc(sys.exc_info()), xbmc.LOGDEBUG)
-    log_msg("ERROR in %s ! --> %s" % (modulename, exceptiondetails), xbmc.LOGERROR)
+    '''helper to properly log an exception'''
+    if sys.version_info.major == 3:
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        log_msg("Exception details: Type: %s Value: %s Traceback: %s" % (exc_type.__name__, exc_value, ''.join(line for line in lines)), xbmc.LOGWARNING)
+    else:
+        log_msg(format_exc(sys.exc_info()), xbmc.LOGWARNING)
+    log_msg("Exception in %s ! --> %s" % (modulename, exceptiondetails), xbmc.LOGERROR)
 
-
+def try_encode(text, encoding="utf-8"):
+    """helper to encode a string to utf-8"""
+    try:
+        if sys.version_info.major == 3:
+            return text
+        else:
+            return text.encode(encoding, "ignore")
+    except Exception:
+        return text
+        
 def urlencode(text):
-    '''helper to urlencode a (unicode) string'''
-    if isinstance(text, unicode):
-        text = text.encode("utf-8")
-    blah = urllib.urlencode({'blahblahblah': text})
+    '''urlencode a string'''
+    if sys.version_info.major == 3:
+        blah = urllib.parse.urlencode({'blahblahblah': try_encode(text)})
+    else:
+        blah = urllib.urlencode({'blahblahblah': try_encode(text)})
     blah = blah[13:]
     return blah
-
 
 def get_content_path(lib_path):
     '''helper to get the real browsable path'''
