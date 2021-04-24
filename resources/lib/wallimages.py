@@ -190,9 +190,9 @@ class WallImages():
                         try:
                             img_obj = io.BytesIO(bytearray(file.readBytes()))
                             img = Image.open(img_obj)
+                            xbmc.sleep(500)
                             img = img.resize(size)
-                            img_canvas.paste(img, (15 * img_width, 5 * img_height))
-                            log_msg("Bane1: %s" % img_canvas)
+                            img_canvas.paste(img, (y * img_width, x * img_height))
                             del img
                             del img_obj
                         except Exception:
@@ -207,7 +207,7 @@ class WallImages():
                 if xbmcvfs.exists(out_file):
                     xbmcvfs.delete(out_file)
                     xbmc.sleep(500)
-                img_canvas = img_canvas.convert("L")
+                img_canvas = img_canvas.convert("RGB")					
                 img_canvas.save(out_file, "JPEG")
 
                 out_file_bw = "%s%s_BW.%s.jpg" % (WALLS_PATH, win_prop, count)

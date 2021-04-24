@@ -169,14 +169,11 @@ class BackgroundsUpdater(threading.Thread):
             if cache:
                 for key, value in cache.items():
                     if value:
-                        if sys.version_info.major < 3:
-                            if isinstance(value, unicode):
-                                value = value.encode("utf-8")
-                            if isinstance(key):
-                                key = key
-                            self.win.setProperty(key, value)
-                        else:
-                            self.win.setProperty(key, value)
+                        if isinstance(value, str):
+                            value = value.encode("utf-8")
+                        if isinstance(key, str):
+                            key = key
+                        self.win.setProperty(key, value)
                             
     def get_images_from_vfspath(self, lib_path):
         '''get all images from the given vfs path'''
@@ -366,7 +363,7 @@ class BackgroundsUpdater(threading.Thread):
         if not self.pvr_bg_recordingsonly:
             tv_images = self.get_images_from_vfspath(
                 "plugin://script.skin.helper.widgets/?mediatype=pvr"
-                "&action=channels&limit=20&reload=%s" % widgetreload)
+                "&channelgroup=1&action=channels&limit=25&reload=%s" % widgetreload)
             if tv_images:  # result can be None
                 images += tv_images
         return images
