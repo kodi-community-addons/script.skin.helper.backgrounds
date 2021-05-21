@@ -148,6 +148,22 @@ msgctxt "#32032"
 msgid "Error while writing changes. Make sure you have filled in all fields correctly."
 msgstr ""
 
+msgctxt "#32033"
+msgid "Trending Movies (embuary.info)"
+msgstr ""
+
+msgctxt "#32034"
+msgid "Trending Tvshows (embuary.info)"
+msgstr ""
+
+msgctxt "#32035"
+msgid "Popular Movies (themoviedb.helper)"
+msgstr ""
+
+msgctxt "#32036"
+msgid "Popular Tvshows (themoviedb.helper)"
+msgstr ""
+
 msgctxt "#32058"
 msgid "Please enter a name for your conditional background"
 msgstr ""

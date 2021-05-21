@@ -437,6 +437,28 @@ class BackgroundsUpdater(threading.Thread):
                 "plugin://script.extendedinfo/?info=topratedtvshows",
                 label=32021)
 
+        # tmdb backgrounds (embuary.info)
+        if xbmc.getCondVisibility("System.HasAddon(script.embuary.info)"):
+            self.set_background(
+                "SkinHelper.TrendingMovies",
+                "plugin://script.embuary.info/movie/trending",
+                label=32033)
+            self.set_background(
+                "SkinHelper.TrendingShows",
+                "plugin://script.embuary.info/tv/trending",
+                label=32034)
+
+        # tmdb backgrounds (themoviedb.helper)
+        if xbmc.getCondVisibility("System.HasAddon(plugin.video.themoviedb.helper)"):
+            self.set_background(
+                "SkinHelper.PopularMovies",
+                "plugin://plugin.video.themoviedb.helper?info=popular&amp;type=movie",
+                label=32035)
+            self.set_background(
+                "SkinHelper.PopularShows",
+                "plugin://plugin.video.themoviedb.helper?info=popular&amp;type=tv",
+                label=32036)
+
         # pictures background
         self.set_background("SkinHelper.PicturesBackground", "pictures", label=32017)
 
