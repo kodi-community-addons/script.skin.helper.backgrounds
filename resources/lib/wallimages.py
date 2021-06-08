@@ -13,29 +13,19 @@ import xbmc
 import xbmcvfs
 import random
 import io
+import sys
 
 WALLS_PATH = "special://profile/addon_data/script.skin.helper.backgrounds/wall_backgrounds/"
 
 # IMPORT PIL/PILLOW ###################################
 SUPPORTS_PIL = False
 
-try:
+if sys.platform.startswith('win32'):
     # prefer Pillow
     from PIL import Image
     TMP = Image.new("RGB", (1, 1))
     del TMP
     SUPPORTS_PIL = True
-except Exception as exc:
-    log_exception(__name__, exc)
-    try:
-        # fallback to traditional PIL
-        import Image
-        TMP = Image.new("RGB", (1, 1))
-        del TMP
-        SUPPORTS_PIL = True
-    except Exception as exc:
-        log_exception(__name__, exc)
-
 
 class WallImages():
     '''Generate wall images from collection of images'''
