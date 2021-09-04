@@ -10,7 +10,7 @@
 				</setting>
 				<setting id="enable_custom_images_path" type="boolean" label="32005" help="">
 					<level>0</level>
-					<default/>
+					<default>false</default>
 					<constraints>
 						<allowempty>true</allowempty>
 					</constraints>
